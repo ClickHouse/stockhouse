@@ -1,0 +1,22 @@
+{
+    "name": "vite-example",
+    "private": true,
+    "version": "3.8.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite --open --host",
+        "start": "vite",            
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@finos/perspective": "3.6.0",
+        "@finos/perspective-viewer": "3.6.0",
+        "@finos/perspective-viewer-d3fc": "3.6.0",
+        "@finos/perspective-viewer-datagrid": "3.6.0",
+        "superstore-arrow": "^3.0.0"
+    },
+    "devDependencies": {
+        "vite": "^6.0.5"
+    }
+}

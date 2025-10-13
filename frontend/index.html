@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer@3.0.0/dist/cdn/perspective-viewer.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-datagrid@3.0.0/dist/cdn/perspective-viewer-datagrid.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-d3fc@3.0.0/dist/cdn/perspective-viewer-d3fc.js"></script>
+    <script>
+      window.dashboardType = "trades";
+    </script>
+    <link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/themes.css" />
+    <link rel="stylesheet" href="src/index.css" />
+    <script type="module" src="src/crypto.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="header">
+        <h2>Crypto Trades & VWAP</h2>
+      </div>
+      <div>
+        <label style="padding-top:0;">Real-time:</label>
+        <label class="switch" style="padding-top:0;margin-left:0;">
+          <input type="checkbox" checked onchange="setMode()" />
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div id="stats">
+        <label id="last_updated">Last updated:</label>
+        <label id="avg_response_time">Average response time: -</label>
+        <label id="total_download">Total Downloaded: -</label>
+      </div>
+      
+      <div id="tables-row">
+        <div id="main-table-container">
+        <perspective-viewer id="main-table" theme="Pro Dark" ></perspective-viewer>
+      </div>
+        <div id="spread-container" style="display: none;">
+        <button id="close-spread" style="position:absolute;top:5px;left:5px;">close</button>
+        <perspective-viewer id="pair-price-spread" theme="Pro Dark" ></perspective-viewer>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

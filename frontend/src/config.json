@@ -1,0 +1,105 @@
+{
+  "trades": {
+    "version": "3.0.0",
+    "plugin": "Datagrid",
+    "plugin_config": {
+      "columns": {},
+      "edit_mode": "SELECT_ROW",
+      "scroll_lock": false
+    },
+    "columns_config": {
+      "ask": {
+        "number_bg_mode": "pulse",
+        "number_format": {
+          "style": "currency",
+          "currency": "USD"
+        }
+      },
+      "last": {
+        "number_bg_mode": "pulse",
+        "number_format": {
+          "style": "currency",
+          "currency": "USD"
+        }
+      },
+      "change": {
+        "number_format": {
+          "style": "unit",
+          "unit": "percent",
+          "minimumFractionDigits": 2.0,
+          "maximumFractionDigits": 2.0
+        }
+      },
+      "latency": {
+        "number_format": {
+          "style": "unit",
+          "unit": "millisecond"
+        }
+      },
+      "bid": {
+        "number_bg_mode": "pulse",
+        "number_format": {
+          "style": "currency",
+          "currency": "USD",
+          "currencyDisplay": "symbol"
+        }
+      }
+    },
+    "settings": false,
+    "theme": "Pro Dark",
+    "title": "Trades",
+    "group_by": [],
+    "split_by": [],
+    "columns": [
+      "pair",
+      "last",
+      "bid",
+      "ask",
+      "change",
+      "volume"
+    ],
+    "filter": [],
+    "sort": [
+      [
+        "volume",
+        "desc"
+      ]
+    ],
+    "expressions": {},
+    "aggregates": {}
+  },
+  "pair-price-spread": {
+    "title": "Candlesticks",
+    "plugin": "Candlestick",
+    "plugin_config": {
+      "columns": {},
+      "edit_mode": "READ_ONLY",
+      "scroll_lock": false
+    },
+    "columns_config": {},
+    "settings": false,
+    "theme": "Pro Dark",
+    "group_by": [
+      "bucket_mins"
+    ],
+    "split_by": [],
+    "columns": [
+      "open",
+      "close",
+      "high",
+      "low",
+      null
+    ],
+    "filter": [],
+    "sort": [],
+    "expressions": {
+      "bucket_mins": "bucket(\"timestamp\", 'm')"
+    },
+    "aggregates": {
+      "high": "any",
+      "low": "any",
+      "close": "any",
+      "open": "any"
+    }
+  }
+}
