@@ -45,13 +45,15 @@ Requirements
 
 ### Configuration
 
-Copy .env.example to .env.local and set your credentials:
+Copy `.env.example` to `.env.local` and set your credentials:
 
+```
 POLYGON_API_KEY=<your_api_key>
 CLICKHOUSE_HOST=https://your-clickhouse-host
 CLICKHOUSE_USER=default
 CLICKHOUSE_PASSWORD=
 CLICKHOUSE_DB=stockhouse
+```
 
 ### Running Locally
 
