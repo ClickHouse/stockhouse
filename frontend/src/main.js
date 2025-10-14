@@ -79,7 +79,7 @@ export function setMode() {
     const query = liveCrypto();
     const { rows, has_rows } = await executeQuery(query);
    
-    const viewer = document.getElementById("main-table");
+    const viewer = document.getElementById("crypto-table");
 
     viewer.addEventListener("perspective-click", (e) => {
       displayPriceSpread(e.detail.row.pair);

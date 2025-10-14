@@ -33,11 +33,14 @@ updateRefreshLabel();
 // --- Market switch events ---
 const marketForm = document.getElementById('marketForm');
 marketForm.addEventListener('change', (e) => {
+    console.log(e.target.value)
   if (e.target.name === 'market') {
-    document.dispatchEvent(
-      new CustomEvent('marketTypeChange', {
-        detail: { market: e.target.value } // 'stocks' | 'cryptos'
-      })
-    );
+    if (e.target.value === 'cryptos') {
+      document.getElementById('crypto-container').style.display = 'flex';
+      document.getElementById('stock-container').style.display = 'none';
+    } else {
+      document.getElementById('crypto-container').style.display = 'none';
+      document.getElementById('stock-container').style.display = 'flex';
+    }
   }
 });

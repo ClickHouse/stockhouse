@@ -8,17 +8,21 @@ export async function displayPriceSpread(pair) {
   const configs = await getConfig();
 
 
-  const viewer = document.getElementById("pair-price-spread");
+  const viewer = document.getElementById("crypto-spread");
   const closeBtn = document.getElementById("close-spread");
-  const container = document.getElementById("spread-container");
+  const placeholder = document.getElementById("crypto-spread-placeholder");
 
-  // Ensure viewer & close button are visible
-  container.style.display = "flex";
+  // Ensure viewer & close button are visible, hide placeholder
+  viewer.style.display = "flex";
+  closeBtn.style.display = "block";
+  placeholder.style.display = "none";
 
 
   // Close handler
   closeBtn.onclick = () => {
-    container.style.display = "none";
+    viewer.style.display = "none";
+    closeBtn.style.display = "none";
+    placeholder.style.display = "flex";
   };
 
   const now = Date.now();
@@ -39,7 +43,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await customElements.whenDefined('perspective-viewer');
   }
 
-  const viewer = document.querySelector('perspective-viewer#pair-price-spread');
+  const viewer = document.querySelector('perspective-viewer#crypto-spread');
   if (!viewer) return;
 
   // helper that tries to grab the inner candlestick

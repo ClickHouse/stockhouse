@@ -76,23 +76,22 @@
             <p id="refreshHelp" class="mt-1 text-xs text-neutral-400">
               Left = paused. Otherwise 1,000 ms down to 10 ms.
             </p>
-          </div>  
+          </div>
 
           <!-- Market type switch -->
           <div id="marketForm">
             <legend class="text-sm font-medium mb-2">Dashboard</legend>
 
             <div class="inline-grid grid-cols-2 rounded-lg ring-1 ring-neutral-600 overflow-hidden">
-              <input class="peer/stocks sr-only" type="radio" name="market" id="stocks" value="stocks" checked />
-              <label for="stocks"
-                class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/stocks:bg-neutral-700 peer-checked/stocks:text-white">
-                Stocks
-              </label>
-
-              <input class="peer/cryptos sr-only" type="radio" name="market" id="cryptos" value="cryptos" />
+              <input class="peer/cryptos sr-only" type="radio" name="market" id="cryptos" value="cryptos" checked />
               <label for="cryptos"
                 class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/cryptos:bg-neutral-700 peer-checked/cryptos:text-white">
                 Cryptos
+              </label>
+              <input class="peer/stocks sr-only" type="radio" name="market" id="stocks" value="stocks" />
+              <label for="stocks"
+                class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/stocks:bg-neutral-700 peer-checked/stocks:text-white">
+                Stocks
               </label>
             </div>
           </div>
@@ -112,14 +111,25 @@
       </div>
     </div>
 
-    <div id="tables-row">
-      <div id="main-table-container">
-        <perspective-viewer id="main-table" theme="Pro Dark"></perspective-viewer>
+    <div id="crypto-container">
+      <div id="crypto-table-container">
+        <perspective-viewer id="crypto-table" theme="Pro Dark"></perspective-viewer>
       </div>
-      <div id="spread-container" style="display: none;">
-        <button id="close-spread" style="position:absolute;top:5px;left:5px;">close</button>
-        <perspective-viewer id="pair-price-spread" theme="Pro Dark"></perspective-viewer>
+      <div id="crypto-spread-container">
+        <div id="crypto-spread-placeholder">Select a ticker to show details</div>
+        <button id="close-spread" style="position:absolute;top:5px;left:5px;display:none;">close</button>
+        <perspective-viewer id="crypto-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
       </div>
+    </div>
+    <div id="stock-container" style="display:none;">
+      <!-- <div id="stock-table-container">
+        <perspective-viewer id="stock-table" theme="Pro Dark"></perspective-viewer>
+      </div>
+      <div id="stock-spread-container">
+        <div id="stock-spread-placeholder">Select a ticker to show details</div>
+        <button id="close-spread" style="position:absolute;top:5px;left:5px;display:none;">close</button>
+        <perspective-viewer id="crypto-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
+      </div> -->
     </div>
   </div>
 </body>

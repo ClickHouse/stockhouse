@@ -42,14 +42,14 @@ perspective-viewer {
   flex: 1 1 auto;
 }
 
-#tables-row {
+#crypto-container {
   display: flex;
   flex: 1 1 auto;
   overflow: hidden;
 }
 
-#main-table-container,
-#spread-container {
+#crypto-table-container,
+#crypto-spread-container {
   display: flex;
   flex-direction: column;
   flex: 1 1 50%;
@@ -58,9 +58,20 @@ perspective-viewer {
   min-height: 300px;
 }
 
-#spread-container {
+#crypto-spread-container {
   position: relative;
   height: 100%;
+}
+
+#crypto-spread-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+  color: #888;
+  border-top: 1px solid #666;
 }
 
 label {
@@ -155,3 +166,5 @@ input:checked+.slider:before {
 perspective-viewer perspective-viewer-d3fc-candlestick button#one-year {
   display: none !important;
 }
+
+
