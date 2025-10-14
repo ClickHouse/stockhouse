@@ -196,7 +196,7 @@ export function setMode() {
 async function displayPriceSpread(pair) {
   // Fetch viewer layout presets
   try {
-    const cfgResponse = await fetch("src/config.json");
+    const cfgResponse = await fetch("/config.json");
     if (cfgResponse.ok) configs = await cfgResponse.json();
   } catch (e) {
     console.warn("Failed to load config.json", e);
@@ -294,7 +294,7 @@ function patchCandlestick(el) {
   try {
     // Fetch viewer layout presets
     try {
-      const cfgResponse = await fetch("src/config.json");
+      const cfgResponse = await fetch("/config.json");
       if (cfgResponse.ok) configs = await cfgResponse.json();
     } catch (e) {
       console.warn("Failed to load config.json", e);
