@@ -1,44 +1,127 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer@3.0.0/dist/cdn/perspective-viewer.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-datagrid@3.0.0/dist/cdn/perspective-viewer-datagrid.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-d3fc@3.0.0/dist/cdn/perspective-viewer-d3fc.js"></script>
-    <script>
-      window.dashboardType = "trades";
-    </script>
-    <link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/themes.css" />
-    <link rel="stylesheet" href="src/index.css" />
-    <script type="module" src="src/crypto.js"></script>
-  </head>
-  <body>
-    <div id="app">
-      <div id="header">
-        <h2>Crypto Trades & VWAP</h2>
-      </div>
-      <div>
-        <label style="padding-top:0;">Real-time:</label>
-        <label class="switch" style="padding-top:0;margin-left:0;">
-          <input type="checkbox" checked onchange="setMode()" />
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <div id="stats">
-        <label id="last_updated">Last updated:</label>
-        <label id="avg_response_time">Average response time: -</label>
-        <label id="total_download">Total Downloaded: -</label>
-      </div>
-      
-      <div id="tables-row">
-        <div id="main-table-container">
-        <perspective-viewer id="main-table" theme="Pro Dark" ></perspective-viewer>
-      </div>
-        <div id="spread-container" style="display: none;">
-        <button id="close-spread" style="position:absolute;top:5px;left:5px;">close</button>
-        <perspective-viewer id="pair-price-spread" theme="Pro Dark" ></perspective-viewer>
+
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer@3.0.0/dist/cdn/perspective-viewer.js"></script>
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-datagrid@3.0.0/dist/cdn/perspective-viewer-datagrid.js"></script>
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-d3fc@3.0.0/dist/cdn/perspective-viewer-d3fc.js"></script>
+  <script>
+    window.dashboardType = "trades";
+  </script>
+  <link rel="stylesheet" crossorigin="anonymous"
+    href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/themes.css" />
+  <link rel="stylesheet" href="src/index.css" />
+  <script type="module" src="src/main.js"></script>
+  <script type="module" src="src/control.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div id="header"
+      class="bg-neutral-800 shadow-lg border-b-2 border-neutral-725 md:sticky md:top-0 z-20 opacity-[98%] backdrop-filter backdrop-blur-lg bg-opacity-90 h-[82px]">
+      <nav class="mx-auto flex items-center justify-between md:px-4 lg:px-16 lg:w-full h-[82px]" aria-label="Global">
+
+        <div class="items-center flex gap-8">
+          <a href="/">
+            <!-- <img class="w-24" src="/click_py.svg" alt="StockHouse" width="96" height="32" /> -->
+            StockHouse
+          </a>
         </div>
+
+        <div class="flex items-center">
+          <div class="flex width-20">
+            <div class="grow width-20 ">
+              <p class="text-sm text-neutral-0">
+                Powered by ClickHouse and Polygon.io
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </nav>
+    </div>
+    <div class="flex justify-between w-full md:px-4 lg:px-16">
+      <div class="relative border-2 border-dotted border-neutral-400 rounded-md p-4 mt-6 mb-6">
+        <!-- Title -->
+        <span class="absolute -top-3 left-4 bg-neutral-800 px-2 text-sm text-neutral-200">
+          Controls
+        </span>
+        <div class="space-y-6 text-neutral-200 flex gap-8">
+          <!-- Refresh speed -->
+          <div>
+            <legend class="text-sm font-medium mb-2">Refresh speed</legend>
+
+            <!-- Slider -->
+            <input id="refreshRange" type="range" min="0" max="100" step="1" value="0" class="w-full cursor-pointer"
+              aria-describedby="refreshHelp refreshCurrent" />
+
+            <!-- Tick labels (visual hints only) -->
+            <div class="mt-1 flex justify-between text-[11px] text-neutral-400">
+              <span>No refresh</span>
+              <span>1s</span>
+              <span>500ms</span>
+              <span>100ms</span>
+              <span>10ms</span>
+            </div>
+
+            <!-- Live value -->
+            <div id="refreshCurrent" class="mt-1 text-sm">
+              Current: <span id="refreshLabel" class="font-medium">No refresh</span>
+            </div>
+
+            <p id="refreshHelp" class="mt-1 text-xs text-neutral-400">
+              Left = paused. Otherwise 1,000 ms down to 10 ms.
+            </p>
+          </div>  
+
+          <!-- Market type switch -->
+          <div id="marketForm">
+            <legend class="text-sm font-medium mb-2">Dashboard</legend>
+
+            <div class="inline-grid grid-cols-2 rounded-lg ring-1 ring-neutral-600 overflow-hidden">
+              <input class="peer/stocks sr-only" type="radio" name="market" id="stocks" value="stocks" checked />
+              <label for="stocks"
+                class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/stocks:bg-neutral-700 peer-checked/stocks:text-white">
+                Stocks
+              </label>
+
+              <input class="peer/cryptos sr-only" type="radio" name="market" id="cryptos" value="cryptos" />
+              <label for="cryptos"
+                class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/cryptos:bg-neutral-700 peer-checked/cryptos:text-white">
+                Cryptos
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="relative border-2 border-dotted border-neutral-400 rounded-md p-4 mt-6 mb-6">
+        <!-- Title -->
+        <span class="absolute -top-3 left-4 bg-neutral-800 px-2 text-sm text-neutral-200">
+          Statistics
+        </span>
+
+        <div><label id="last_updated">Last updated:</label></div>
+        <div><label id="avg_response_time">Average response time: -</label></div>
+        <div><label id="total_download">Total Downloaded: -</label></div>
+
       </div>
     </div>
-  </body>
+
+    <div id="tables-row">
+      <div id="main-table-container">
+        <perspective-viewer id="main-table" theme="Pro Dark"></perspective-viewer>
+      </div>
+      <div id="spread-container" style="display: none;">
+        <button id="close-spread" style="position:absolute;top:5px;left:5px;">close</button>
+        <perspective-viewer id="pair-price-spread" theme="Pro Dark"></perspective-viewer>
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>

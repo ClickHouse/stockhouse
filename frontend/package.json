@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite --open --host",
-        "start": "vite",            
+        "start": "vite",
         "build": "vite build",
         "preview": "vite preview"
     },
@@ -14,7 +14,9 @@
         "@finos/perspective-viewer": "3.6.0",
         "@finos/perspective-viewer-d3fc": "3.6.0",
         "@finos/perspective-viewer-datagrid": "3.6.0",
-        "superstore-arrow": "^3.0.0"
+        "@tailwindcss/vite": "^4.1.14",
+        "superstore-arrow": "^3.0.0",
+        "tailwindcss": "^4.1.14"
     },
     "devDependencies": {
         "vite": "^6.0.5"
