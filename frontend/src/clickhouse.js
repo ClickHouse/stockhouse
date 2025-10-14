@@ -1,19 +1,21 @@
-// ClickHouse connection (read-only credentials)
-const chUser = import.meta.env.VITE_CH_USER;
-const chPassword = import.meta.env.VITE_CH_PASSWORD;
-const clickhouse_url = import.meta.env.VITE_CH_URL;
-const credentials = btoa(`${chUser}:${chPassword}`);
-const authHeader = `Basic ${credentials}`;
-if (!clickhouse_url || !chUser || !chPassword) {
-  console.error("Missing Vite env vars: VITE_CH_URL, VITE_CH_USER, VITE_CH_PASSWORD");
-}
+// Use local API proxy for connection pooling
+// In production: /api/query (Vercel serverless function)
+// In dev: proxied through Vite to /api/query
+const apiUrl = '/api/query';
 
 export async function executeQuery(query) {
-    const response = await fetch(clickhouse_url, {
+    const response = await fetch(apiUrl, {
     method: "POST",
     body: query,
-    headers: { Authorization: authHeader }
+    headers: { 
+      'Content-Type': 'text/plain'
+    }
     });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Query failed: ${error}`);
+    }
 
     const rows = await response.arrayBuffer();
 

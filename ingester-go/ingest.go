@@ -186,58 +186,83 @@ func mustEnv(k string) string {
 }
 
 func stocksWS(ctx context.Context, apiKey, url string, subs []string, qCh chan<- StockQuote, tCh chan<- StockTrade) {
-	conn, _, err := websocket.DefaultDialer.Dial(url, http.Header{})
-	if err != nil {
-		log.Fatalf("stocks dial: %v", err)
-	}
-	defer conn.Close()
-
-	send := func(v any) { _ = conn.WriteJSON(v) }
-	send(map[string]string{"action": "auth", "params": apiKey})
-	send(map[string]string{"action": "subscribe", "params": join(subs)})
+	backoff := 5 * time.Second
+	maxBackoff := 2 * time.Minute
 
 	for {
-		_, data, err := conn.ReadMessage()
-		if err != nil {
-			log.Printf("stocks read: %v", err)
-			time.Sleep(5 * time.Second)
+		select {
+		case <-ctx.Done():
 			return
+		default:
 		}
-		var frames []json.RawMessage
-		if err := json.Unmarshal(data, &frames); err != nil {
-			log.Printf("stocks json: %v", err)
+
+		conn, _, err := websocket.DefaultDialer.Dial(url, http.Header{})
+		if err != nil {
+			log.Printf("stocks dial: %v, retrying in %v", err, backoff)
+			time.Sleep(backoff)
+			backoff = min(backoff*2, maxBackoff)
 			continue
 		}
-		for _, f := range frames {
-			var meta struct{ Ev string `json:"ev"` }
-			_ = json.Unmarshal(f, &meta)
-			switch meta.Ev {
-			case "Q":
-				var q StockQuote
-				if err := json.Unmarshal(f, &q); err == nil {
-					if q.Sym == "" && q.Symbol != "" {
-						q.Sym = q.Symbol
+
+		send := func(v any) { _ = conn.WriteJSON(v) }
+		send(map[string]string{"action": "auth", "params": apiKey})
+		send(map[string]string{"action": "subscribe", "params": join(subs)})
+		log.Printf("stocks: connected to %s", url)
+		backoff = 5 * time.Second // reset on successful connection
+
+		for {
+			select {
+			case <-ctx.Done():
+				conn.Close()
+				return
+			default:
+			}
+
+			_, data, err := conn.ReadMessage()
+			if err != nil {
+				log.Printf("stocks read: %v, reconnecting in %v", err, backoff)
+				conn.Close()
+				time.Sleep(backoff)
+				backoff = min(backoff*2, maxBackoff)
+				break // break inner loop to reconnect
+			}
+
+			var frames []json.RawMessage
+			if err := json.Unmarshal(data, &frames); err != nil {
+				log.Printf("stocks json: %v", err)
+				continue
+			}
+			for _, f := range frames {
+				var meta struct{ Ev string `json:"ev"` }
+				_ = json.Unmarshal(f, &meta)
+				switch meta.Ev {
+				case "Q":
+					var q StockQuote
+					if err := json.Unmarshal(f, &q); err == nil {
+						if q.Sym == "" && q.Symbol != "" {
+							q.Sym = q.Symbol
+						}
+						q.C = normalizeC(q.C)
+						select {
+						case qCh <- q:
+						default:
+						}
+					} else {
+						log.Printf("decode Q failed: %v", err)
 					}
-					q.C = normalizeC(q.C)
-					select {
-					case qCh <- q:
-					default:
+				case "T":
+					var t StockTrade
+					if err := json.Unmarshal(f, &t); err == nil {
+						if t.Sym == "" && t.Symbol != "" {
+							t.Sym = t.Symbol
+						}
+						select {
+						case tCh <- t:
+						default:
+						}
+					} else {
+						log.Printf("decode T failed: %v", err)
 					}
-				} else {
-					log.Printf("decode Q failed: %v", err)
-				}
-			case "T":
-				var t StockTrade
-				if err := json.Unmarshal(f, &t); err == nil {
-					if t.Sym == "" && t.Symbol != "" {
-						t.Sym = t.Symbol
-					}
-					select {
-					case tCh <- t:
-					default:
-					}
-				} else {
-					log.Printf("decode T failed: %v", err)
 				}
 			}
 		}
@@ -245,44 +270,69 @@ func stocksWS(ctx context.Context, apiKey, url string, subs []string, qCh chan<-
 }
 
 func cryptoWS(ctx context.Context, apiKey, url string, subs []string, cqCh chan<- CryptoQuote, ctCh chan<- CryptoTrade) {
-	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
-	if err != nil {
-		log.Fatalf("crypto dial: %v", err)
-	}
-	defer conn.Close()
-
-	_ = conn.WriteJSON(map[string]string{"action": "auth", "params": apiKey})
-	_ = conn.WriteJSON(map[string]string{"action": "subscribe", "params": join(subs)})
+	backoff := 5 * time.Second
+	maxBackoff := 2 * time.Minute
 
 	for {
-		_, data, err := conn.ReadMessage()
-		if err != nil {
-			log.Printf("crypto read: %v", err)
-			time.Sleep(5 * time.Second)
+		select {
+		case <-ctx.Done():
 			return
+		default:
 		}
-		var frames []json.RawMessage
-		if err := json.Unmarshal(data, &frames); err != nil {
+
+		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
+		if err != nil {
+			log.Printf("crypto dial: %v, retrying in %v", err, backoff)
+			time.Sleep(backoff)
+			backoff = min(backoff*2, maxBackoff)
 			continue
 		}
-		for _, f := range frames {
-			var meta struct{ Ev string `json:"ev"` }
-			_ = json.Unmarshal(f, &meta)
-			switch meta.Ev {
-			case "XQ":
-				var q CryptoQuote
-				if json.Unmarshal(f, &q) == nil {
-					select {
-					case cqCh <- q:
-					default:
+
+		_ = conn.WriteJSON(map[string]string{"action": "auth", "params": apiKey})
+		_ = conn.WriteJSON(map[string]string{"action": "subscribe", "params": join(subs)})
+		log.Printf("crypto: connected to %s", url)
+		backoff = 5 * time.Second
+
+		for {
+			select {
+			case <-ctx.Done():
+				conn.Close()
+				return
+			default:
+			}
+
+			_, data, err := conn.ReadMessage()
+			if err != nil {
+				log.Printf("crypto read: %v, reconnecting in %v", err, backoff)
+				conn.Close()
+				time.Sleep(backoff)
+				backoff = min(backoff*2, maxBackoff)
+				break
+			}
+
+			var frames []json.RawMessage
+			if err := json.Unmarshal(data, &frames); err != nil {
+				continue
+			}
+			for _, f := range frames {
+				var meta struct{ Ev string `json:"ev"` }
+				_ = json.Unmarshal(f, &meta)
+				switch meta.Ev {
+				case "XQ":
+					var q CryptoQuote
+					if json.Unmarshal(f, &q) == nil {
+						select {
+						case cqCh <- q:
+						default:
+						}
 					}
-				}
-			case "XT":
-				var t CryptoTrade
-				if json.Unmarshal(f, &t) == nil {
-					select {
-					case ctCh <- t:
-					default:
+				case "XT":
+					var t CryptoTrade
+					if json.Unmarshal(f, &t) == nil {
+						select {
+						case ctCh <- t:
+						default:
+						}
 					}
 				}
 			}
@@ -291,35 +341,60 @@ func cryptoWS(ctx context.Context, apiKey, url string, subs []string, cqCh chan<
 }
 
 func fmvWS(ctx context.Context, apiKey, url string, subs []string, fmvCh chan<- FMV) {
-	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
-	if err != nil {
-		log.Fatalf("fmv dial: %v", err)
-	}
-	defer conn.Close()
-
-	_ = conn.WriteJSON(map[string]string{"action": "auth", "params": apiKey})
-	_ = conn.WriteJSON(map[string]string{"action": "subscribe", "params": join(subs)})
+	backoff := 5 * time.Second
+	maxBackoff := 2 * time.Minute
 
 	for {
-		_, data, err := conn.ReadMessage()
-		if err != nil {
-			log.Printf("fmv read: %v", err)
-			time.Sleep(5 * time.Second)
+		select {
+		case <-ctx.Done():
 			return
+		default:
 		}
-		var frames []json.RawMessage
-		if err := json.Unmarshal(data, &frames); err != nil {
+
+		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
+		if err != nil {
+			log.Printf("fmv dial: %v, retrying in %v", err, backoff)
+			time.Sleep(backoff)
+			backoff = min(backoff*2, maxBackoff)
 			continue
 		}
-		for _, f := range frames {
-			var meta struct{ Ev string `json:"ev"` }
-			_ = json.Unmarshal(f, &meta)
-			if meta.Ev == "FMV" {
-				var m FMV
-				if json.Unmarshal(f, &m) == nil {
-					select {
-					case fmvCh <- m:
-					default:
+
+		_ = conn.WriteJSON(map[string]string{"action": "auth", "params": apiKey})
+		_ = conn.WriteJSON(map[string]string{"action": "subscribe", "params": join(subs)})
+		log.Printf("fmv: connected to %s", url)
+		backoff = 5 * time.Second
+
+		for {
+			select {
+			case <-ctx.Done():
+				conn.Close()
+				return
+			default:
+			}
+
+			_, data, err := conn.ReadMessage()
+			if err != nil {
+				log.Printf("fmv read: %v, reconnecting in %v", err, backoff)
+				conn.Close()
+				time.Sleep(backoff)
+				backoff = min(backoff*2, maxBackoff)
+				break
+			}
+
+			var frames []json.RawMessage
+			if err := json.Unmarshal(data, &frames); err != nil {
+				continue
+			}
+			for _, f := range frames {
+				var meta struct{ Ev string `json:"ev"` }
+				_ = json.Unmarshal(f, &meta)
+				if meta.Ev == "FMV" {
+					var m FMV
+					if json.Unmarshal(f, &m) == nil {
+						select {
+						case fmvCh <- m:
+						default:
+						}
 					}
 				}
 			}

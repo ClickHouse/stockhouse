@@ -1,58 +1,29 @@
 
 export function liveCrypto() {
-  return `with 
-    toDate(now('UTC')) as curr_day,
-    trades_info as (
-        select
-            pair as sym,
-            argMax(p, t) as last_price,
-            round(((last_price - (argMinIf(p, t, fromUnixTimestamp64Milli(t, 'UTC') >= curr_day))) / (argMinIf(p, t, fromUnixTimestamp64Milli(t, 'UTC') >= curr_day))) * 100, 2) as change_pct,
-            sum(s) as total_volume,
-            max(t) as latest_t
-        from
-            polygon.crypto_trades
-        where
-            toDate(fromUnixTimestamp64Milli(t, 'UTC')) = curr_day
-           
-        group by
-            pair
-        order by
-            pair asc
-    ),
-    quotes_info as (
-        select
-            pair as sym,
-            argMax(bp, t) as bid,
-            argMax(ap, t) as ask,
-            max(t) as latest_t
-        from
-            polygon.crypto_quotes
-        where
-            toDate(fromUnixTimestamp64Milli(t, 'UTC')) = curr_day
-           
-        group by
-            pair
-        order by
-            pair asc
-    )
-    select
-        t.sym as pair,
-        t.last_price as last,
-        q.bid as bid,
-        q.ask as ask,
-        t.change_pct as change,
-        t.total_volume as volume,
-        toUnixTimestamp64Milli(now64()) - greatest(t.latest_t, q.latest_t) as last_update
-    from
-        trades_info as t
-        left join quotes_info as q on t.sym = q.sym
-    WHERE q.bid > 5 AND endsWith(pair, 'USD')
-    FORMAT Arrow
+    return `WITH toDate(now('UTC')) AS curr_day
+    SELECT
+        t.pair AS pair,
+        argMaxMerge(t.last_price_state) AS last,
+        argMinMerge(t.open_price_state) AS open,
+        argMaxMerge(q.bid_state)        AS bid,
+        argMaxMerge(q.ask_state)        AS ask,
+        round(((last - open) / open) * 100, 2) AS change,
+        sumMerge(t.volume_state)                AS volume,
+        toUnixTimestamp64Milli(now64()) -
+        greatest(maxMerge(t.latest_t_state), maxMerge(q.latest_t_state)) AS last_update
+    FROM polygon.agg_crypto_trades_daily AS t
+    LEFT JOIN polygon.agg_crypto_quotes_daily AS q
+        USING (event_date, pair)
+    WHERE event_date = curr_day
+    AND endsWith(pair, 'USD')
+    GROUP BY pair
+    HAVING bid > 5
+    ORDER BY pair ASC
   `
 }
 
 export function sqlPairSpread(pair, lb, ub, bucket_sec) {
-  return `
+    return `
 WITH
     toIntervalSecond(${bucket_sec}) AS bucket_int
 SELECT

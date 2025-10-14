@@ -2,11 +2,11 @@
 const range = document.getElementById('refreshRange');
 const label = document.getElementById('refreshLabel');
 
-// v=0 => null (paused). v=1..100 maps linearly 1000ms -> 10ms
+// v=0 => null (paused). v=1..100 maps linearly 1000ms -> 50ms
 function valueToMs(v) {
   if (v === 0) return null;
-  // Linear map from 1000 to 10 over 99 steps
-  return Math.round(1000 - (v - 1) * (990 / 99));
+  // Linear map from 1000 to 50 over 99 steps
+  return Math.round(1000 - (v - 1) * (950 / 99));
 }
 
 function updateRefreshLabel() {
@@ -33,7 +33,7 @@ updateRefreshLabel();
 // --- Market switch events ---
 const marketForm = document.getElementById('marketForm');
 marketForm.addEventListener('change', (e) => {
-    console.log(e.target.value)
+
   if (e.target.name === 'market') {
     if (e.target.value === 'cryptos') {
       document.getElementById('crypto-container').style.display = 'flex';

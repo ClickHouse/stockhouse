@@ -18,4 +18,12 @@ export default defineConfig({
         target: "ES2022",
     },
     plugins: [tailwindcss()],
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+            }
+        }
+    }
 });
