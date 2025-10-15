@@ -82,8 +82,7 @@ export async function init() {
     });
     main_table = await worker.table(rows, { index: 'sym' });
 
-    viewer.load(main_table);
-    viewer.restore({ theme: "Pro Dark", ...(configs['stock-trades'] || {}) });
+    await viewer.load(main_table); viewer.restore({ theme: "Pro Dark", ...(configs['stock-trades'] || {}) });
 
     updateMainTable(main_table, now);
 }
