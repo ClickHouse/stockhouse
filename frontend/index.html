@@ -112,25 +112,25 @@
       </div>
     </div>
 
-    <div id="crypto-container">
-      <div id="crypto-table-container">
+    <div id="crypto-container" class="flex flex-auto overflow-hidden">
+      <div id="crypto-table-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
         <perspective-viewer id="crypto-table" theme="Pro Dark"></perspective-viewer>
       </div>
-      <div id="crypto-spread-container">
-        <div id="crypto-spread-placeholder">Select a ticker to show details</div>
+      <div id="crypto-spread-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
+        <div id="crypto-spread-placeholder" class="flex items-center justify-center w-full h-full text-base text-[#888] border-t border-[#666]">Select a ticker to show details</div>
         <button id="close-spread" style="position:absolute;top:5px;left:5px;display:none;">close</button>
         <perspective-viewer id="crypto-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
       </div>
     </div>
-    <div id="stock-container" style="display:none;">
-      <!-- <div id="stock-table-container">
+    <div id="stock-container" class="flex flex-auto overflow-hidden" style="display:none;">
+      <div id="stock-table-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
         <perspective-viewer id="stock-table" theme="Pro Dark"></perspective-viewer>
       </div>
-      <div id="stock-spread-container">
-        <div id="stock-spread-placeholder">Select a ticker to show details</div>
+      <div id="stock-spread-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
+        <div id="stock-spread-placeholder" class="flex items-center justify-center w-full h-full text-base text-[#888] border-t border-[#666]">Select a ticker to show details</div>
         <button id="close-spread" style="position:absolute;top:5px;left:5px;display:none;">close</button>
-        <perspective-viewer id="crypto-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
-      </div> -->
+        <perspective-viewer id="stock-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
+      </div>
     </div>
   </div>
 </body>

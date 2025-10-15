@@ -22,7 +22,7 @@ export function liveCrypto() {
   `
 }
 
-export function sqlPairSpread(pair, lb, ub, bucket_sec) {
+export function cryptoPairSpread(pair, lb, ub, bucket_sec) {
     return `
 WITH
     toIntervalSecond(${bucket_sec}) AS bucket_int
@@ -39,5 +39,46 @@ WHERE pair = '${pair}'
   AND t <  ${ub}
 GROUP BY timestamp
 ORDER BY timestamp
-FORMAT ARROW`;
+`;
+}
+
+
+export function liveStock() {
+    return `WITH toDate(now('UTC')) AS curr_day
+    SELECT
+        t.sym AS sym,
+        argMaxMerge(t.last_price_state) AS last,
+        argMinMerge(t.open_price_state) AS open,
+        argMaxMerge(q.bid_state)        AS bid,
+        argMaxMerge(q.ask_state)        AS ask,
+        round(((last - open) / open) * 100, 2) AS change,
+        sumMerge(t.volume_state)                AS volume,
+        toUnixTimestamp64Milli(now64()) -
+        greatest(maxMerge(t.latest_t_state), maxMerge(q.latest_t_state)) AS last_update
+    FROM polygon.agg_stock_trades_daily AS t
+    LEFT JOIN polygon.agg_stock_quotes_daily AS q
+        USING (event_date, sym)
+    WHERE event_date = curr_day AND sym in ('AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG','META','BRK.B','TSM','AVGO','V','MA','UNH','JNJ','XOM','JPMC','WMT','PG','DIS','KO','PFE','VZ','NFLX','ORCL','INTC','ABNB','CRM','ASML','BABA','COST','CVX')
+    GROUP BY sym
+    ORDER BY sym ASC
+  `
+}
+
+export function stockCandlestick(sym, lb, ub, bucket_sec) {
+    return `
+WITH
+    toIntervalSecond(${bucket_sec}) AS bucket_int
+SELECT
+    argMin(p, t) AS open,
+    argMax(p, t) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
+FROM polygon.trades
+WHERE sym = '${sym}'
+  AND t >= ${lb}
+  AND t <  ${ub}
+GROUP BY timestamp
+ORDER BY timestamp
+`;
 }
