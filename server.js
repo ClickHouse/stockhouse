@@ -32,13 +32,18 @@ app.post('/api/query', async (req, res) => {
       return res.status(400).json({ error: 'Query must be a string' });
     }
 
-    console.log(`[${new Date().toISOString()}] Executing query (${query.length} bytes)`);
+    // Log connection info
+    const connectionHeader = req.headers.connection || 'not set';
+    const keepAlive = req.socket.remoteAddress;
+    const socketReused = req.socket._handle ? 'reused' : 'new';
+    
+    console.log(`[${new Date().toISOString()}] Query (${query.length} bytes) | Connection: ${connectionHeader} | Socket: ${socketReused}`);
     
     // Add FORMAT Arrow if not already present
     const queryWithFormat = query.trim().toUpperCase().includes('FORMAT') 
       ? query 
       : `${query.trim()} FORMAT Arrow`;
-    
+    const start = Date.now();
     // Make HTTP request to ClickHouse
     const response = await fetch(CLICKHOUSE_URL, {
       method: 'POST',
@@ -54,11 +59,13 @@ app.post('/api/query', async (req, res) => {
       const errorText = await response.text();
       throw new Error(`ClickHouse error: ${errorText}`);
     }
-
+    const execTime = Date.now() - start;
+    console.log(`[${new Date().toISOString()}] Query (${query.length} bytes) | Connection: ${connectionHeader} | Socket: ${socketReused} | Exec time: ${execTime} ms`);
     const buffer = await response.arrayBuffer();
     
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('X-ClickHouse-Format', 'Arrow');
+    res.setHeader('X-Connection-Reused', req.headers.connection === 'keep-alive' ? 'true' : 'false');
     res.send(Buffer.from(buffer));
   } catch (error) {
     console.error('Query error:', error.message);
