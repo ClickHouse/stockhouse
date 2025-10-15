@@ -17,11 +17,6 @@ export async function executeQuery(query) {
       throw new Error(`Query failed: ${error}`);
     }
 
-    // Log connection reuse info (visible in console)
-    const connectionReused = response.headers.get('X-Connection-Reused');
-    if (connectionReused) {
-      console.log(`[Connection] Reused: ${connectionReused}`);
-    }
 
     const rows = await response.arrayBuffer();
 

@@ -14,6 +14,7 @@ let refreshInterval = null;
 let showCandlestick = false;
 
 document.addEventListener('refreshChange', ({ detail }) => {
+    if (detail.market !== 'stocks') return;
     if (detail.paused) {
         // Handle pause state
         clearInterval(refreshInterval);
@@ -32,6 +33,7 @@ document.addEventListener('refreshChange', ({ detail }) => {
 
 // ---------- streaming loop ----------
 async function updateMainTable(table, lower_bound) {
+    console.log("update main stock table")
     let upper_bound = Date.now();
     const start = Date.now();
     const query = liveStock();
@@ -86,7 +88,10 @@ export async function init() {
     updateMainTable(main_table, now);
 }
 
-
+export function stopStock() {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+}
 
 async function displayCandlestick(symbol) {
 
@@ -110,7 +115,7 @@ async function displayCandlestick(symbol) {
     };
 
     const now = Date.now();
-    const lower = now - 1 * 60 * 60 * 1000; // last 1h
+    const lower = now - 8 * 60 * 60 * 1000; // last 1h
     const query = stockCandlestick(symbol, lower, now, 60);
     const { rows, has_rows } = await executeQuery(query);
     const worker = await perspective.worker();
@@ -172,7 +177,6 @@ function patchCandlestick(el) {
 
 // ---------- streaming loop ----------
 async function updateCandlestick(table, sym, lower_bound) {
-    console.log('updateCandlestick', sym, lower_bound);
     let upper_bound = Date.now();
     const prev_lower_bound = lower_bound - 60;
     const query = stockCandlestick(sym, prev_lower_bound, upper_bound, 60);

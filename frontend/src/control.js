@@ -2,6 +2,8 @@
 const range = document.getElementById('refreshRange');
 const label = document.getElementById('refreshLabel');
 
+let selectedMarket = 'cryptos';
+
 // v=0 => null (paused). v=1..100 maps linearly 1000ms -> 50ms
 function valueToMs(v) {
     if (v === 0) return null;
@@ -22,7 +24,7 @@ function updateRefreshLabel() {
     // Emit a CustomEvent you can listen to in your app
     document.dispatchEvent(
         new CustomEvent('refreshChange', {
-            detail: { ms, paused: ms === null, sliderValue: v }
+            detail: { ms, paused: ms === null, sliderValue: v, market: selectedMarket }
         })
     );
 }
@@ -34,6 +36,7 @@ updateRefreshLabel();
 const marketForm = document.getElementById('marketForm');
 marketForm.addEventListener('change', (e) => {
     if (e.target.name === 'market') {
+        selectedMarket = e.target.value;
         document.dispatchEvent(
             new CustomEvent('marketChange', {
                 detail: { market: e.target.value }

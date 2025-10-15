@@ -2,8 +2,8 @@
 import { executeQuery } from "./clickhouse.js";
 import { liveCrypto } from './queries.js';
 import { prettyPrintSize, getConfig } from './utils.js';
-import { init as initCrypto } from './crypto.js';
-import { init as initStocks } from './stock.js';
+import { init as initCrypto, stopCrypto } from './crypto.js';
+import { init as initStocks, stopStock } from './stock.js';
 
 
 const max_times_in_avg = 10;
@@ -21,8 +21,11 @@ let pingInterval = null;
 
 document.addEventListener('marketChange', ({ detail }) => {
   if (detail.market === 'cryptos') {
+    stopStock();
     initCrypto();
+
   } else {
+    stopCrypto();
     initStocks();
   }
 });

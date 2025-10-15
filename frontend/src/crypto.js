@@ -14,6 +14,7 @@ let refreshInterval = null;
 let showCandlestick = false;
 
 document.addEventListener('refreshChange', ({ detail }) => {
+    if (detail.market !== 'cryptos') return;
     if (detail.paused) {
         // Handle pause state
         clearInterval(refreshInterval);
@@ -32,6 +33,7 @@ document.addEventListener('refreshChange', ({ detail }) => {
 
 // ---------- streaming loop ----------
 async function updateMainTable(table, lower_bound) {
+    console.log("update main crypto table")
     let upper_bound = Date.now();
     const start = Date.now();
     const query = liveCrypto();
@@ -118,6 +120,11 @@ async function displayCandlestick(pair) {
     viewer.load(candlestick_table);
     viewer.restore({ theme: "Pro Dark", ...(configs['pair-price-spread'] || {}) });
     updateCandlestick(candlestick_table, pair, now);
+}
+
+export function stopCrypto() {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
 }
 
 // run after DOM is parsed
