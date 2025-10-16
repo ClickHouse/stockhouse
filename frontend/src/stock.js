@@ -1,7 +1,6 @@
-
 import perspective from "https://cdn.jsdelivr.net/npm/@finos/perspective@3.0.0/dist/cdn/perspective.js";
 import { executeQuery } from "./clickhouse.js";
-import { liveStock, stockCandlestick } from './queries.js';
+import { liveStock, stockLivePriceHistoricQuery, stockMinutePriceHistoricQuery, stockHourPriceHistoricQuery, stockDayPriceHistoricQuery } from './queries.js';
 import { prettyPrintSize, getConfig } from './utils.js';
 
 const max_times_in_avg = 10;
@@ -12,6 +11,7 @@ let responseTimes = [];
 let total_size = 0;
 let refreshInterval = null;
 let showCandlestick = false;
+let bucketInterval = "5min";
 
 document.addEventListener('refreshChange', ({ detail }) => {
     if (detail.market !== 'stocks') return;
@@ -33,7 +33,6 @@ document.addEventListener('refreshChange', ({ detail }) => {
 
 // ---------- streaming loop ----------
 async function updateMainTable(table, lower_bound) {
-    console.log("update main stock table")
     let upper_bound = Date.now();
     const start = Date.now();
     const query = liveStock();
@@ -58,8 +57,8 @@ async function updateMainTable(table, lower_bound) {
 
 export async function init() {
 
-    document.getElementById('crypto-container').style.display = 'none';
-    document.getElementById('stock-container').style.display = 'flex';
+    document.getElementById('crypto-main').style.display = 'none';
+    document.getElementById('stock-main').style.display = 'block';
     let configs;
     // Fetch viewer layout presets
     try {
@@ -97,31 +96,64 @@ async function displayCandlestick(symbol) {
     const configs = await getConfig();
 
     const viewer = document.getElementById("stock-spread");
-    const closeBtn = document.getElementById("close-spread");
+    const closeBtn = document.getElementById("close-stock-spread");
+    const candlestickInterval = document.getElementById("candlestick-stock-interval");
     const placeholder = document.getElementById("stock-spread-placeholder");
+
+    const intervalBtn5min = document.getElementById("stock-5min");
+    const intervalBtn30min = document.getElementById("stock-30min");
+    const intervalBtn1hour = document.getElementById("stock-1hour");
+    const intervalBtn1day = document.getElementById("stock-1day");
 
     // Ensure viewer & close button are visible, hide placeholder
     viewer.style.display = "flex";
     closeBtn.style.display = "block";
     placeholder.style.display = "none";
-
+    candlestickInterval.style.display = "flex";
 
     // Close handler
     closeBtn.onclick = () => {
         viewer.style.display = "none";
         closeBtn.style.display = "none";
         placeholder.style.display = "flex";
+        candlestickInterval.style.display = "none";
     };
 
-    const now = Date.now();
-    const lower = now - 8 * 60 * 60 * 1000; // last 1h
-    const query = stockCandlestick(symbol, lower, now, 60);
-    const { rows, has_rows } = await executeQuery(query);
+    intervalBtn5min.onclick = () => {
+        bucketInterval = "5min";
+        updateCandlestick(true);
+    };
+    intervalBtn30min.onclick = () => {
+        bucketInterval = "30min";
+        updateCandlestick(true);
+    };
+    intervalBtn1hour.onclick = () => {
+        bucketInterval = "1hour";
+        updateCandlestick(true);
+    };
+    intervalBtn1day.onclick = () => {
+        bucketInterval = "1day";
+        updateCandlestick(true);
+    };
+
+
+
+    let query = stockLivePriceHistoricQuery(symbol);
+    let { rows, has_rows } = await executeQuery(query);
     const worker = await perspective.worker();
-    candlestick_table = await worker.table(rows, { index: 'timestamp' });
+    if (has_rows) {
+        candlestick_table = await worker.table(rows, { index: 'timestamp' });
+    } else {
+        query = stockDayPriceHistoricQuery(symbol);
+        let { rows, has_rows } = await executeQuery(query);
+        if (has_rows) {
+            bucketInterval = "1day";
+            candlestick_table = await worker.table(rows, { index: 'timestamp' });
+        }
+    }
     viewer.load(candlestick_table);
     viewer.restore({ theme: "Pro Dark", ...(configs['stock-price-spread'] || {}) });
-    updateCandlestick(candlestick_table, symbol, now);
+    updateCandlestick();
 }
 
 // run after DOM is parsed
@@ -174,18 +206,32 @@ function patchCandlestick(el) {
 }
 
 
+function getQuery(interval) {
+    switch (interval) {
+        case "5min":
+            return stockLivePriceHistoricQuery(selectedSymbol);
+        case "30min":
+            return stockMinutePriceHistoricQuery(selectedSymbol);
+        case "1hour":
+            return stockHourPriceHistoricQuery(selectedSymbol);
+        case "1day":
+            return stockDayPriceHistoricQuery(selectedSymbol);
+    }
+}
+
 // ---------- streaming loop ----------
-async function updateCandlestick(table, sym, lower_bound) {
-    let upper_bound = Date.now();
-    const prev_lower_bound = lower_bound - 60;
-    const query = stockCandlestick(sym, prev_lower_bound, upper_bound, 60);
+async function updateCandlestick(replace = false) {
+
+    const query = getQuery(bucketInterval);
     const { rows, has_rows } = await executeQuery(query);
 
     if (has_rows) {
-        table.update(rows);
+        if (replace) {
+            candlestick_table.replace(rows);
+        } else {
+            candlestick_table.update(rows);
+        }
     }
-    lower_bound = upper_bound;
-    upper_bound = Date.now();
-}
 
+}
 

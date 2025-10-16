@@ -22,28 +22,137 @@ export function liveCrypto() {
   `
 }
 
-export function cryptoPairSpread(pair, lb, ub, bucket_sec) {
+
+export function cryptoLivePriceHistoricQuery(pair) {
     return `
-WITH
-    toIntervalSecond(${bucket_sec}) AS bucket_int
-SELECT
-    
-    argMin(p, t) AS open,
-    argMax(p, t) AS close,
+    WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 15 SECOND)                  AS bucket_end
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
     max(p)       AS high,
     min(p)       AS low,
-    toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
-FROM polygon.crypto_trades
-WHERE pair = '${pair}'
-  AND t >= ${lb}
-  AND t <  ${ub}
-GROUP BY timestamp
-ORDER BY timestamp
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.crypto_trades
+    WHERE
+    pair = '${pair}'
+    AND ts >= now64(3) - INTERVAL 10 MINUTE
+    AND ts  < now64(3)
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
 `;
 }
 
 
-export function liveStock() { 
+export function cryptoMinutePriceHistoricQuery(pair) {
+
+
+    return `
+        WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 1 MINUTE)                  AS bucket_end
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.crypto_trades
+    WHERE
+    pair = '${pair}'
+    AND ts >= now64(3) - INTERVAL 30 MINUTE
+    AND ts  < now64(3)
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
+
+`;
+}
+
+
+export function cryptoHourPriceHistoricQuery(pair) {
+    return `
+        WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 2 MINUTE)                  AS bucket_end
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.crypto_trades
+    WHERE
+    pair = '${pair}'
+    AND ts >= now64(3) - INTERVAL 1 HOUR
+    AND ts  < now64(3)
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
+`;
+}
+
+export function cryptoDayPriceHistoricQuery(pair) {
+    return `
+        WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 30 MINUTE)                  AS bucket_end
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.crypto_trades
+    WHERE
+    pair = '${pair}'
+    AND ts >= now64(3) - INTERVAL 1 day
+    AND ts  < now64(3)
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
+`;
+}
+
+export function cryptoPairSpread(pair, lb, bucket_sec) {
+    return `
+    WITH
+        toIntervalSecond(${bucket_sec}) AS bucket_int
+    SELECT
+        argMin(p, t) AS open,
+        argMax(p, t) AS close,
+        max(p)       AS high,
+        min(p)       AS low,
+        toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
+    FROM polygon.crypto_trades
+    WHERE pair = '${pair}'
+    AND t >= ${lb}
+    AND t <  ${ub}
+    GROUP BY timestamp
+    ORDER BY timestamp
+`;
+}
+
+// export function cryptoPairSpread(pair, lb, ub, bucket_sec) {
+//     return `
+// WITH
+//     toIntervalSecond(${bucket_sec}) AS bucket_int
+// SELECT
+
+//     argMin(p, t) AS open,
+//     argMax(p, t) AS close,
+//     max(p)       AS high,
+//     min(p)       AS low,
+//     toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
+// FROM polygon.crypto_trades
+// WHERE pair = '${pair}'
+//   AND t >= ${lb}
+//   AND t <  ${ub}
+// GROUP BY timestamp
+// ORDER BY timestamp
+// `;
+// }
+
+
+export function liveStock() {
     return `WITH
     ['AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG','META','BRK.B','TSM','AVGO','V','MA','UNH','JNJ','XOM','JPMC','WMT','PG','DIS','KO','PFE','VZ','NFLX','ORCL','INTC','ABNB','CRM','ASML','BABA','COST','CVX'] as symbols,
     toDate(now('America/New_York')) AS curr_day,
@@ -110,6 +219,7 @@ export function stockCandlestick(sym, lb, ub, bucket_sec) {
     return `
 WITH
     toIntervalSecond(${bucket_sec}) AS bucket_int
+    
 SELECT
     argMin(p, t) AS open,
     argMax(p, t) AS close,
@@ -122,5 +232,100 @@ WHERE sym = '${sym}'
   AND t <  ${ub}
 GROUP BY timestamp
 ORDER BY timestamp
+`;
+}
+
+
+
+export function stockLivePriceHistoricQuery(sym) {
+    return `
+    WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 15 SECOND)                  AS bucket_end, 
+    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.trades
+    WHERE
+    sym = '${sym}'
+    AND ts >= max_ts - INTERVAL 10 MINUTE
+    AND ts  <= max_ts
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
+`;
+}
+
+
+export function stockMinutePriceHistoricQuery(sym) {
+
+
+    return `
+        WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 1 MINUTE)                  AS bucket_end,
+    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.trades
+    WHERE
+    sym = '${sym}'
+    AND ts >= max_ts - INTERVAL 30 MINUTE
+    AND ts  <= max_ts
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
+
+`;
+}
+
+
+export function stockHourPriceHistoricQuery(sym) {
+    return `
+        WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 2 MINUTE)                  AS bucket_end,
+    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.trades
+    WHERE
+    sym = '${sym}'
+    AND ts >= max_ts - INTERVAL 1 HOUR
+    AND ts  <= max_ts
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
+`;
+}
+
+export function stockDayPriceHistoricQuery(sym) {
+    return `
+        WITH
+    toDateTime64(t / 1000., 3)                                 AS ts,
+    toStartOfInterval(ts, INTERVAL 10 MINUTE)                  AS bucket_end,
+    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    SELECT
+    argMin(p, ts) AS open,
+    argMax(p, ts) AS close,
+    max(p)       AS high,
+    min(p)       AS low,
+    toDateTime64(bucket_end, 3) AS timestamp
+    FROM polygon.trades
+    WHERE
+    sym = '${sym}'
+    AND ts >= max_ts - INTERVAL 1 day
+    AND ts  <= max_ts
+    GROUP BY bucket_end
+    ORDER BY bucket_end ASC
 `;
 }

@@ -36,7 +36,8 @@
           <div class="flex width-20">
             <div class="grow width-20 ">
               <p class="text-md text-neutral-0 flex items-center gap-1">
-                Powered by <img class="w-32 inline" src="/clickhouse-logo.svg" alt="ClickHouse" /> and <img class="w-32 inline" src="/polygon-logo.svg" alt="Polygon.io" />
+                Powered by <img class="w-32 inline" src="/clickhouse-logo.svg" alt="ClickHouse" /> and <img
+                  class="w-32 inline" src="/polygon-logo.svg" alt="Polygon.io" />
               </p>
             </div>
           </div>
@@ -112,27 +113,65 @@
       </div>
     </div>
 
-    <div id="crypto-container" class="flex flex-auto overflow-hidden">
-      <div id="crypto-table-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
-        <perspective-viewer id="crypto-table" theme="Pro Dark"></perspective-viewer>
+    <div id="crypto-main" class="relative h-full border-t border-[#666]">
+      <div id="crypto-controls" class="flex min-h-[36px] w-full justify-end">
+        <div id="candlestick-interval" class="flex items-center" style="display:none;">
+          <button id="5min"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">5M</button>
+          <button id="30min"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">30M</button>
+          <button id="1hour"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">1H</button>
+          <button id="1day"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">1D</button>
+        </div>
+
+        <button id="close-spread"
+          class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-24"
+          style="display:none;">Close</button>
       </div>
-      <div id="crypto-spread-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
-        <div id="crypto-spread-placeholder" class="flex items-center justify-center w-full h-full text-base text-[#888] border-t border-[#666]">Select a ticker to show details</div>
-        <button id="close-spread" style="position:absolute;top:5px;left:5px;display:none;">close</button>
-        <perspective-viewer id="crypto-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
+      <div id="crypto-container" class="flex flex-auto overflow-hidden relative h-full min-h-[300px]">
+        <div id="crypto-table-container" class="flex flex-col flex-1 ">
+          <perspective-viewer id="crypto-table" theme="Pro Dark"></perspective-viewer>
+        </div>
+        <div id="crypto-spread-container" class="flex flex-col flex-1">
+          <div id="crypto-spread-placeholder"
+            class="flex items-center justify-center w-full h-full text-base text-[#888]">Select a
+            ticker to show details</div>
+          <perspective-viewer id="crypto-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
+        </div>
       </div>
     </div>
-    <div id="stock-container" class="flex flex-auto overflow-hidden" style="display:none;">
-      <div id="stock-table-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
-        <perspective-viewer id="stock-table" theme="Pro Dark"></perspective-viewer>
+    <div id="stock-main" class="relative h-full border-t border-[#666]" style="display:none;">
+      <div id="stock-controls" class="flex min-h-[36px] w-full justify-end">
+        <div id="candlestick-stock-interval" class="flex items-center" style="display:none;">
+          <button id="stock-5min"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">5M</button>
+          <button id="stock-30min"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">30M</button>
+          <button id="stock-1hour"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">1H</button>
+          <button id="stock-1day"
+            class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-14">1D</button>
+        </div>
+
+        <button id="close-stock-spread"
+          class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-24"
+          style="display:none;">Close</button>
       </div>
-      <div id="stock-spread-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
-        <div id="stock-spread-placeholder" class="flex items-center justify-center w-full h-full text-base text-[#888] border-t border-[#666]">Select a ticker to show details</div>
-        <button id="close-spread" style="position:absolute;top:5px;left:5px;display:none;">close</button>
-        <perspective-viewer id="stock-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
+      <div id="stock-container" class="flex flex-auto overflow-hidden relative h-full min-h-[300px]">
+
+        <div id="stock-table-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
+          <perspective-viewer id="stock-table" theme="Pro Dark"></perspective-viewer>
+        </div>
+        <div id="stock-spread-container" class="flex flex-col flex-1 relative h-full min-h-[300px]">
+          <div id="stock-spread-placeholder"
+            class="flex items-center justify-center w-full h-full text-base text-[#888]">Select a
+            ticker to show details</div>
+          <perspective-viewer id="stock-spread" theme="Pro Dark" style="display:none;"></perspective-viewer>
+        </div>
       </div>
     </div>
-  </div>
 </body>
 
 </html>

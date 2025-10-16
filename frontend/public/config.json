@@ -161,7 +161,7 @@
     "filter": [],
     "sort": [],
     "expressions": {
-      "bucket_mins": "bucket(\"timestamp\", 'm')"
+      "bucket_mins": "bucket(\"timestamp\", '15s')"
     },
     "aggregates": {
       "high": "any",

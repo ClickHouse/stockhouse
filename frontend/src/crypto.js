@@ -1,7 +1,7 @@
 
 import perspective from "https://cdn.jsdelivr.net/npm/@finos/perspective@3.0.0/dist/cdn/perspective.js";
 import { executeQuery } from "./clickhouse.js";
-import { liveCrypto, cryptoPairSpread } from './queries.js';
+import { liveCrypto, cryptoPairSpread, cryptoLivePriceHistoricQuery, cryptoMinutePriceHistoricQuery, cryptoHourPriceHistoricQuery, cryptoDayPriceHistoricQuery } from './queries.js';
 import { prettyPrintSize, getConfig } from './utils.js';
 
 const max_times_in_avg = 10;
@@ -12,6 +12,9 @@ let responseTimes = [];
 let total_size = 0;
 let refreshInterval = null;
 let showCandlestick = false;
+let bucketInterval = "5min";
+
+
 
 document.addEventListener('refreshChange', ({ detail }) => {
     if (detail.market !== 'cryptos') return;
@@ -25,7 +28,7 @@ document.addEventListener('refreshChange', ({ detail }) => {
         refreshInterval = setInterval(() => {
             updateMainTable(main_table, Date.now() - 3 * 24 * 60 * 60 * 1000);
             if (showCandlestick) {
-                updateCandlestick(candlestick_table, selectedPair, Date.now() - 1 * 60 * 60 * 1000);
+                updateCandlestick();
             }
         }, detail.ms);
     }
@@ -33,7 +36,6 @@ document.addEventListener('refreshChange', ({ detail }) => {
 
 // ---------- streaming loop ----------
 async function updateMainTable(table, lower_bound) {
-    console.log("update main crypto table")
     let upper_bound = Date.now();
     const start = Date.now();
     const query = liveCrypto();
@@ -58,8 +60,8 @@ async function updateMainTable(table, lower_bound) {
 
 export async function init() {
 
-    document.getElementById('crypto-container').style.display = 'flex';
-    document.getElementById('stock-container').style.display = 'none';
+    document.getElementById('crypto-main').style.display = 'block';
+    document.getElementById('stock-main').style.display = 'none';
     let configs;
     // Fetch viewer layout presets
     try {
@@ -95,25 +97,51 @@ async function displayCandlestick(pair) {
     const configs = await getConfig();
 
     const viewer = document.getElementById("crypto-spread");
+    const candlestickInterval = document.getElementById("candlestick-interval");
     const closeBtn = document.getElementById("close-spread");
     const placeholder = document.getElementById("crypto-spread-placeholder");
+
+    const intervalBtn5min = document.getElementById("5min");
+    const intervalBtn30min = document.getElementById("30min");
+    const intervalBtn1hour = document.getElementById("1hour");
+    const intervalBtn1day = document.getElementById("1day");
 
     // Ensure viewer & close button are visible, hide placeholder
     viewer.style.display = "flex";
     closeBtn.style.display = "block";
     placeholder.style.display = "none";
-
+    candlestickInterval.style.display = "flex";
 
     // Close handler
     closeBtn.onclick = () => {
         viewer.style.display = "none";
         closeBtn.style.display = "none";
         placeholder.style.display = "flex";
+        candlestickInterval.style.display = "none";
     };
 
+    intervalBtn5min.onclick = () => {
+        bucketInterval = "5min";
+        updateCandlestick(true);
+    };
+    intervalBtn30min.onclick = () => {
+        bucketInterval = "30min";
+        updateCandlestick(true);
+    };
+    intervalBtn1hour.onclick = () => {
+        bucketInterval = "1hour";
+        updateCandlestick(true);
+    };
+    intervalBtn1day.onclick = () => {
+        bucketInterval = "1day";
+        updateCandlestick(true);
+    };
+
+
     const now = Date.now();
-    const lower = now - 1 * 60 * 60 * 1000; // last 1h
-    const query = cryptoPairSpread(pair, lower, now, 60);
+    // const lower = now - 1 * 60 * 60 * 1000; // last 1h
+    // const query = cryptoPairSpread(pair, lower, now, 60);
+    const query = cryptoLivePriceHistoricQuery(pair);
     const { rows, has_rows } = await executeQuery(query);
     const worker = await perspective.worker();
     candlestick_table = await worker.table(rows, { index: 'timestamp' });
@@ -129,6 +157,7 @@ export function stopCrypto() {
 
 // run after DOM is parsed
 window.addEventListener('DOMContentLoaded', async () => {
+    console.log("DOMContentLoaded")
     // make sure the custom element is defined
     if (customElements.whenDefined) {
         await customElements.whenDefined('perspective-viewer');
@@ -136,6 +165,23 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     const viewer = document.querySelector('perspective-viewer#crypto-spread');
     if (!viewer) return;
+
+    // Wait for shadow DOM to be populated
+    await new Promise(resolve => {
+        if (viewer.shadowRoot && viewer.shadowRoot.getElementById('status_bar')) {
+            resolve();
+        } else {
+            const observer = new MutationObserver(() => {
+                if (viewer.shadowRoot && viewer.shadowRoot.getElementById('status_bar')) {
+                    observer.disconnect();
+                    resolve();
+                }
+            });
+            observer.observe(viewer, { childList: true, subtree: true });
+        }
+    });
+
+    console.log("Shadow DOM ready:", viewer.shadowRoot.getElementById('status_bar'))
 
     // helper that tries to grab the inner candlestick
     const getCandlestick = () =>
@@ -176,18 +222,32 @@ function patchCandlestick(el) {
     }
 }
 
+function getQuery(interval) {
+    switch (interval) {
+        case "5min":
+            return cryptoLivePriceHistoricQuery(selectedPair);
+        case "30min":
+            return cryptoMinutePriceHistoricQuery(selectedPair);
+        case "1hour":
+            return cryptoHourPriceHistoricQuery(selectedPair);
+        case "1day":
+            return cryptoDayPriceHistoricQuery(selectedPair);
+    }
+}
 
 // ---------- streaming loop ----------
-async function updateCandlestick(table, pair, lower_bound) {
-    console.log('updateCandlestick', pair, lower_bound);
-    let upper_bound = Date.now();
-    const prev_lower_bound = lower_bound - 60;
-    const query = cryptoPairSpread(pair, prev_lower_bound, upper_bound, 60);
+async function updateCandlestick(replace = false) {
+
+    const query = getQuery(bucketInterval);
+    // const query = cryptoPairSpread(selectedPair, prev_lower_bound, upper_bound, 60);
     const { rows, has_rows } = await executeQuery(query);
 
     if (has_rows) {
-        table.update(rows);
+        if (replace) {
+            candlestick_table.replace(rows);
+        } else {
+            candlestick_table.update(rows);
+        }
     }
-    lower_bound = upper_bound;
-    upper_bound = Date.now();
+
 }

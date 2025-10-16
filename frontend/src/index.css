@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+html, body {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
 body {
   background: #242526;
   color: white;
@@ -20,6 +26,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
+  overflow: hidden;
 }
 
 #header {
@@ -38,7 +45,7 @@ body {
 }
 
 perspective-viewer {
-  border-top: 1px solid #666;
+  /* border-top: 1px solid #666; */
   flex: 1 1 auto;
 }
 
