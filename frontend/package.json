@@ -15,8 +15,10 @@
         "@finos/perspective-viewer-d3fc": "3.6.0",
         "@finos/perspective-viewer-datagrid": "3.6.0",
         "@tailwindcss/vite": "^4.1.14",
+        "@vitejs/plugin-vue": "^6.0.1",
         "superstore-arrow": "^3.0.0",
-        "tailwindcss": "^4.1.14"
+        "tailwindcss": "^4.1.14",
+        "vue": "^3.5.22"
     },
     "devDependencies": {
         "vite": "^6.0.5"
