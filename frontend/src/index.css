@@ -31,8 +31,8 @@ body {
 }
 
 perspective-viewer {
-  /* border-top: 1px solid #666; */
   flex: 1 1 auto;
+  --d3fc-series-1: #33FF44 !important;
 }
 
 
