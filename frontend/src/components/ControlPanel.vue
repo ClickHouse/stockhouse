@@ -1,10 +1,10 @@
 <template>
-  <div class="relative border-2 border-dotted border-neutral-400 rounded-md p-4 mt-6 mb-6">
+  <div class="relative border border-[#eef400] rounded-lg p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm flex-1 lg:flex-initial lg:min-w-[600px]">
     <!-- Title -->
-    <span class="absolute -top-3 left-4 bg-neutral-800 px-2 text-sm text-neutral-200">
+    <span class="absolute -top-3 left-[50%] border border-[#eef400] text-neutral-400 font-light rounded-full translate-x-[-50%] bg-[#1d1d1d] px-4 text-sm font-medium text-neutral-200 ">
       Controls
     </span>
-    <div class="space-y-6 text-neutral-200 flex gap-8">
+    <div class="space-y-6 text-neutral-200 flex gap-8 flex-wrap lg:flex-nowrap">
       <!-- Refresh speed -->
       <div>
         <legend class="text-sm font-medium mb-2">Refresh speed</legend>
@@ -56,7 +56,7 @@
           />
           <label
             for="cryptos"
-            class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/cryptos:bg-neutral-700 peer-checked/cryptos:text-white"
+            class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/cryptos:bg-[#eef400] peer-checked/cryptos:text-neutral-900 peer-checked/cryptos:font-semibold transition-colors"
           >
             Cryptos
           </label>
@@ -71,7 +71,7 @@
           />
           <label
             for="stocks"
-            class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/stocks:bg-neutral-700 peer-checked/stocks:text-white"
+            class="px-4 py-2 text-sm text-center cursor-pointer bg-neutral-800 peer-checked/stocks:bg-[#eef400] peer-checked/stocks:text-neutral-900 peer-checked/stocks:font-semibold transition-colors"
           >
             Stocks
           </label>
@@ -128,3 +128,61 @@ const handleMarketChange = () => {
 // Initialize with default values
 handleRefreshChange()
 </script>
+
+<style scoped>
+/* Custom slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 6px;
+}
+
+/* Track styling */
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #404040 0%, #eef400 100%);
+  border-radius: 3px;
+}
+
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #404040 0%, #eef400 100%);
+  border-radius: 3px;
+}
+
+/* Thumb styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #eef400;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #1d1d1d;
+  margin-top: -6px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #eef400;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #1d1d1d;
+}
+
+/* Hover effects */
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #fff44d;
+  box-shadow: 0 0 8px rgba(238, 244, 0, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #fff44d;
+  box-shadow: 0 0 8px rgba(238, 244, 0, 0.5);
+}
+</style>

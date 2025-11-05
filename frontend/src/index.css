@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 html, body {
@@ -7,41 +8,26 @@ html, body {
 }
 
 body {
-  background: #242526;
+  background: #1d1d1d;
   color: white;
-  font-family: "ui-monospace", "SFMono-Regular", "SF Mono", "Menlo",
-    "Consolas", "Liberation Mono", monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   touch-action: none;
 }
+
+/* body {
+  color: rgb(var(--foreground-rgb));
+  background:  #1d1d1d;
+} */
+
+
 
 * {
   box-sizing: border-box;
 }
 
 #app {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-}
-
-#header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 20px;
-  margin-left: 10px;
-  padding-right: 20px;
-}
-
-#header a {
-  display: inline-flex;
+  height: 100%;
+  background-image: url('/dot_grid.svg');
 }
 
 perspective-viewer {
@@ -50,15 +36,7 @@ perspective-viewer {
 }
 
 
-label {
-  height: 32px;
-  font-size: 12px;
-  margin-right: 4px;
-  margin-left: 14px;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  border: 1px solid transparent;
-}
+/* Label styles removed - now handled per-component for better control */
 
 img {
   vertical-align: middle;

@@ -1,0 +1,29 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cookie base -->
+  <circle cx="40" cy="40" r="35" fill="#D4A574"/>
+  
+  <!-- Cookie texture (lighter spots) -->
+  <circle cx="30" cy="28" r="3" fill="#C89860"/>
+  <circle cx="52" cy="32" r="2.5" fill="#C89860"/>
+  <circle cx="35" cy="45" r="2" fill="#C89860"/>
+  <circle cx="55" cy="48" r="3" fill="#C89860"/>
+  <circle cx="45" cy="58" r="2.5" fill="#C89860"/>
+  <circle cx="25" cy="55" r="2" fill="#C89860"/>
+  
+  <!-- Chocolate chips -->
+  <circle cx="32" cy="35" r="4" fill="#5D4037"/>
+  <circle cx="48" cy="40" r="4.5" fill="#5D4037"/>
+  <circle cx="38" cy="52" r="4" fill="#5D4037"/>
+  <circle cx="52" cy="55" r="3.5" fill="#5D4037"/>
+  <circle cx="28" cy="48" r="3" fill="#5D4037"/>
+  <circle cx="58" cy="42" r="3" fill="#5D4037"/>
+  <circle cx="42" cy="28" r="3.5" fill="#5D4037"/>
+  
+  <!-- Highlights on chips -->
+  <circle cx="33" cy="34" r="1.5" fill="#8D6E63" opacity="0.6"/>
+  <circle cx="49" cy="39" r="1.5" fill="#8D6E63" opacity="0.6"/>
+  <circle cx="39" cy="51" r="1.5" fill="#8D6E63" opacity="0.6"/>
+  
+  <!-- Cookie edge shading -->
+  <circle cx="40" cy="40" r="35" fill="none" stroke="#B88A5C" stroke-width="2" opacity="0.3"/>
+</svg>
