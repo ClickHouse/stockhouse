@@ -2,34 +2,46 @@
   <div
     :id="`${marketType}-main`"
     v-show="visible"
-    class="relative h-full border-t border-[#666]"
+    class="border-t border-neutral-700 md:px-4 lg:px-16 pb-2 flex flex-col flex-1 min-h-0 "
   >
-    <div :id="`${marketType}-controls`" class="flex min-h-[36px] w-full justify-end">
-      <div v-show="showCandlestickInterval" class="flex items-center">
+    <div
+     
+      :id="`${marketType}-controls`"
+      class="flex  w-full items-center h-[54px] py-4"
+      :class="marketType === 'stock' ? 'justify-between' : 'justify-end'"
+    >
+      <div v-if="marketType === 'stock'" class="text-xs text-neutral-400 italic">
+        Stock data is delayed by 15 minutes
+      </div>
+
+      <div v-show="showSpread" class="flex items-center gap-3">
+        <div v-show="showCandlestickInterval" class="inline-flex rounded-lg ring-1 ring-neutral-600 overflow-hidden">
+          <button
+            v-for="interval in intervals"
+            :key="interval.value"
+            @click="emit('interval-change', interval.value)"
+            :class="getButtonClass(interval.value)"
+          >
+            {{ interval.label }}
+          </button>
+        </div>
+
+
         <button
-          v-for="interval in intervals"
-          :key="interval.value"
-          @click="emit('interval-change', interval.value)"
-          :class="getButtonClass(interval.value)"
+          v-show="showCloseButton"
+          @click="emit('close-spread')"
+          class="bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
-          {{ interval.label }}
+          Close
         </button>
       </div>
-
-      <button
-        v-show="showCloseButton"
-        @click="emit('close-spread')"
-        class="bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 m-1 rounded text-sm w-24"
-      >
-        Close
-      </button>
     </div>
 
-    <div :id="`${marketType}-container`" class="flex flex-auto overflow-hidden relative h-full min-h-[300px]">
-      <div :id="`${marketType}-table-container`" class="flex flex-col flex-1 relative h-full min-h-[300px]">
+    <div :id="`${marketType}-container`" class="flex flex-1 overflow-hidden relative min-h-0">
+      <div :id="`${marketType}-table-container`" class="flex flex-col flex-1 relative min-h-0">
         <perspective-viewer :ref="setTableRef" theme="Pro Dark"></perspective-viewer>
       </div>
-      <div :id="`${marketType}-spread-container`" class="flex flex-col flex-1 relative h-full min-h-[300px]">
+      <div :id="`${marketType}-spread-container`" class="flex flex-col flex-1 relative min-h-0">
         <div
           v-show="!showSpread"
           class="flex items-center justify-center w-full h-full text-base text-[#888]"
@@ -74,7 +86,6 @@ const intervals = [
 const tableViewer = ref(null)
 const spreadViewer = ref(null)
 
-// Template refs handlers
 const setTableRef = (el) => {
   tableViewer.value = el
 }
@@ -84,9 +95,9 @@ const setSpreadRef = (el) => {
 }
 
 const getButtonClass = (interval) => {
-  const baseClass = 'text-white px-3 py-1 m-1 rounded text-sm w-14'
-  const activeClass = 'bg-neutral-600'
-  const inactiveClass = 'bg-neutral-700 hover:bg-neutral-600'
+  const baseClass = 'px-4 py-2 text-sm min-w-[56px] transition-colors font-medium hover:cursor-pointer'
+  const activeClass = 'bg-[#eef400] text-neutral-900'
+  const inactiveClass = 'bg-neutral-800 text-white hover:bg-neutral-700'
 
   return `${baseClass} ${props.selectedInterval === interval ? activeClass : inactiveClass}`
 }

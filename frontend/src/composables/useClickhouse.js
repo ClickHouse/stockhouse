@@ -24,11 +24,11 @@ export function useClickhouse() {
         pingTimes.value.reduce((a, b) => a + b, 0) / pingTimes.value.length
       ).toFixed(2)
 
-      pingTime.value = `Ping time: ${avgPing} ms (avg of ${pingTimes.value.length})`
+      pingTime.value = `${avgPing} ms (avg of ${pingTimes.value.length})`
       error.value = null
     } catch (err) {
       console.error('Ping error:', err)
-      pingTime.value = 'Ping time: Error'
+      pingTime.value = 'Error'
       error.value = 'Failed to ping ClickHouse server'
     }
   }
