@@ -31,7 +31,7 @@
         </div>
 
         <!-- Live value -->
-        <div id="refreshCurrent" class="mt-1 text-sm">
+        <div id="refreshCurrent" class="mt-4 text-sm">
           Current: <span class="font-medium">{{ refreshLabel }}</span>
         </div>
 

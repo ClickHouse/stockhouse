@@ -2,7 +2,7 @@
   <div
     :id="`${marketType}-main`"
     v-show="visible"
-    class="border-t border-neutral-700 md:px-4 lg:px-16 pb-2 flex flex-col flex-1 min-h-0 "
+    class="md:px-4 lg:px-16 pb-2 flex flex-col flex-1 min-h-0 "
   >
     <div
      

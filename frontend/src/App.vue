@@ -22,6 +22,10 @@
               <img class="w-32 h-auto" src="/massive-logo-white.svg" alt="Massive" />
             </a>
           </div>
+          <div class="h-8 w-px bg-neutral-600 ml-4"></div>
+          <a href="https://github.com/ClickHouse/stockhouse" target="_blank" rel="noopener noreferrer" class="hover:opacity-80 transition-opacity">
+            <img class="w-6 h-6" src="/github.svg" alt="GitHub Repository" />
+          </a>
         </div>
       </nav>
     </header>
