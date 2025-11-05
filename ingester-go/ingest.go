@@ -108,7 +108,7 @@ const (
 )
 
 func main() {
-	apiKey := mustEnv("POLYGON_API_KEY")
+	apiKey := mustEnv("MASSIVE_API_KEY")
 	chAddr := mustEnv("CLICKHOUSE_HOST") // e.g. host:9440 (native TLS)
 	chUser := mustEnv("CLICKHOUSE_USER")
 	chPass := mustEnv("CLICKHOUSE_PASSWORD")
@@ -455,7 +455,7 @@ func insertQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO polygon.quotes (sym,bx,bp,bs,ax,ap,as,c,i,t,q,z) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO quotes (sym,bx,bp,bs,ax,ap,as,c,i,t,q,z) VALUES`)
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("quotes prepare: %v", err)
@@ -550,7 +550,7 @@ func insertTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO polygon.trades (sym,i,x,p,s,c,t,q,z,trfi,trft) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO trades (sym,i,x,p,s,c,t,q,z,trfi,trft) VALUES`)
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("trades prepare: %v", err)
@@ -635,7 +635,7 @@ func insertCryptoQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in 
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO polygon.crypto_quotes (pair,bp,bs,ap,as,t,x,r) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO crypto_quotes (pair,bp,bs,ap,as,t,x,r) VALUES`)
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("crypto_quotes prepare: %v", err)
@@ -717,7 +717,7 @@ func insertCryptoTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in 
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO polygon.crypto_trades (pair,p,t,s,c,i,x,r) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO crypto_trades (pair,p,t,s,c,i,x,r) VALUES`)
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("crypto_trades prepare: %v", err)
@@ -794,7 +794,7 @@ func insertFmv(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan FM
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO polygon.stock_fmv (sym,fmv,t) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO stock_fmv (sym,fmv,t) VALUES`)
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("fmv prepare: %v", err)

@@ -1,14 +1,14 @@
 # StockHouse - Real-time Market Analytics with ClickHouse
 
-StockHouse combines live market data from polygon.io, storage and analytics powered by ClickHouse, and real-time visualization with Perspective.
+StockHouse combines live market data from [Massive](https://massive.com), storage and analytics powered by ClickHouse, and real-time visualization with [Perspective](https://perspective.finos.org).
 
 It’s a complete demo of how to build a high-performance streaming analytics app.
 
-Available at stockhouse.clickhouse.com
+Available at https://stockhouse.clickhouse.com
 
 ## Overview
 
-StockHouse ingests real-time market data — both stock and crypto — directly from Polygon.io WebSocket APIs, storing it in ClickHouse for fast querying and serving through a live dashboard built with perspective.finos.
+StockHouse ingests real-time market data — both stock and crypto — directly from [Massive WebSocket APIs](https://massive.com/docs/websocket/quickstart), storing it in ClickHouse for fast querying and serving through a live dashboard built with Perspective.
 
 This setup demonstrates how to handle streaming financial data, store it efficiently, and visualize it with millisecond updates.
 
@@ -19,62 +19,136 @@ This [blog](https://clickhouse.com/blog/build-a-real-time-market-data-app-with-c
 Financial data moves fast and traditional systems can’t always keep up.
 
 StockHouse shows how to build a scalable analytics system that can handle millions of updates per second, while still offering:
-	•	Low-latency, high-concurrency queries
-	•	Efficient ingestion of streaming data
-	•	Smooth, real-time visualizations
+- Low-latency, high-concurrency queries
+- Efficient ingestion of streaming data
+- Smooth, real-time visualizations
 
 This is a practical demo for engineers and analysts interested in building real-time dashboards, trading monitors, or financial observability tools.
 
+## Features
+
+- **Real-time data ingestion** from Massive WebSocket APIs for stocks and cryptocurrencies
+- **High-performance storage** with ClickHouse optimized for time-series data
+- **Live visualizations** using Perspective with millisecond-level updates
+- **Scalable architecture** handling millions of updates per second
+- **Interactive dashboards** with candlestick charts, trade history, and market statistics
+
 ## Architecture
 
-StockHouse consists of three main components:
-	1.	Data Source – Polygon.io WebSocket streams for stocks (Q.*) and crypto (XQ.*) tickers
-	2.	Database – ClickHouse tables optimized for time-series ingestion and aggregation
-	3.	UI – Perspective dashboard displaying real-time prices, volumes, and trends
+StockHouse consists of five main components:
 
-## Deployment
+1. **Data Source** – Massive WebSocket APIs streaming real-time market data
+2. **Ingester** – Go-based service that consumes WebSocket data and writes to ClickHouse
+3. **Database** – ClickHouse tables optimized for time-series ingestion and aggregation
+4. **Backend** – Node.js API server for querying ClickHouse
+5. **Frontend** – Vue.js dashboard with Perspective for real-time visualization
 
-You can explore the public demo at stockhouse.clickhouse.com or deploy it locally.
+## Prerequisites
 
-Requirements
-	•	node >= 18
-	•	npm >= 9
-	•	Python >= 3.8 (for ingestion scripts)
-	•	ClickHouse >= 24.3
-	•	Polygon.io API key
+Before you begin, ensure you have:
 
-### Configuration
+- **Node.js** >= 18
+- **npm** >= 9
+- **Docker** (for running the ingester)
+- **ClickHouse** >= 24.3 ([ClickHouse Cloud](https://clickhouse.com/cloud) or self-hosted)
+- **Massive API key** ([Sign up here](https://massive.com))
 
-Copy `.env.example` to `.env.local` and set your credentials:
+## Getting Started
 
+You can explore the public demo at [https://stockhouse.clickhouse.com](https://stockhouse.clickhouse.com) or deploy it locally by following these steps.
+
+### 1. Set Up ClickHouse Database
+
+Run the schema script to set up all required tables and materialized views:
+
+```bash
+clickhouse-client --database stockhouse < scripts/schema.sql
 ```
-POLYGON_API_KEY=<your_api_key>
-CLICKHOUSE_HOST=https://your-clickhouse-host
-CLICKHOUSE_USER=default
-CLICKHOUSE_PASSWORD=
-CLICKHOUSE_DB=stockhouse
+
+The schema includes:
+- **Base tables**: `trades`, `quotes`, `crypto_trades`, `crypto_quotes`, `stock_fmv`
+- **Aggregate tables**: Daily aggregations for quotes and trades
+- **Materialized views**: Automatic real-time aggregation of trading data
+
+### 2. Run the Ingester
+
+The ingester is a Go-based service that connects to Massive WebSocket APIs and streams data into ClickHouse.
+
+**Build the Docker image** from the `ingester-go` directory:
+
+```bash
+cd ingester-go
+docker build -t massive-ingester:latest .
 ```
 
-### Running Locally
+**Run the ingester** with your credentials:
 
-Install dependencies:
-
+```bash
+docker run --rm \
+  -e CLICKHOUSE_HOST=your-instance.clickhouse.cloud:9440 \
+  -e CLICKHOUSE_USER=default \
+  -e CLICKHOUSE_PASSWORD='your_password' \
+  -e CLICKHOUSE_DB=stockhouse \
+  -e MASSIVE_API_KEY=your_api_key \
+  massive-ingester:latest
 ```
+
+**Environment Variables:**
+- `CLICKHOUSE_HOST` - ClickHouse host and native port (e.g., `your-instance.clickhouse.cloud:9440` or `localhost:9000`)
+- `CLICKHOUSE_USER` - ClickHouse username (usually `default`)
+- `CLICKHOUSE_PASSWORD` - ClickHouse password
+- `CLICKHOUSE_DB` - Database name (`stockhouse`)
+- `MASSIVE_API_KEY` - Your Massive API key
+
+The ingester will start streaming data immediately. You should see log messages indicating successful connections and data ingestion.
+
+### 3. Run the Application
+
+**Install dependencies:**
+
+```bash
 npm install
 ```
 
-Start the ingestion service: 
+**Configure environment variables:**
 
-```
-TODO
+Copy `.env.example` to `.env.local` and set your credentials:
+
+```bash
+CLICKHOUSE_URL=https://your-instance.clickhouse.cloud:8443
+CLICKHOUSE_USER=default
+CLICKHOUSE_PASSWORD=your_password
+CLICKHOUSE_DB=stockhouse
 ```
 
-Start the dashboard:
+> **Note**: The application uses the HTTP(S) interface (port 8443 for ClickHouse Cloud, 8123 for self-hosted).
 
-```
+**Start the backend API server:**
+
+```bash
 npm run dev
 ```
 
-Open http://localhost:5173 to view the dashboard.
+The backend server will start on `http://localhost:3000`.
+
+**Start the frontend dashboard:**
+
+In a new terminal:
+
+```bash
+npm run frontend
+```
+
+**Access the dashboard:**
+
+Open [http://localhost:5173](http://localhost:5173) in your browser to view the live dashboard.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 
