@@ -1,4 +1,4 @@
-# StockHouse - Real-time Market Analytics with ClickHouse
+# StockHouse - Real-time market analytics with ClickHouse
 
 StockHouse combines live market data from [Massive](https://massive.com), storage and analytics powered by ClickHouse, and real-time visualization with [Perspective](https://perspective.finos.org).
 
@@ -31,7 +31,6 @@ This is a practical demo for engineers and analysts interested in building real-
 - **High-performance storage** with ClickHouse optimized for time-series data
 - **Live visualizations** using Perspective with millisecond-level updates
 - **Scalable architecture** handling millions of updates per second
-- **Interactive dashboards** with candlestick charts, trade history, and market statistics
 
 ## Architecture
 
@@ -53,11 +52,11 @@ Before you begin, ensure you have:
 - **ClickHouse** >= 24.3 ([ClickHouse Cloud](https://clickhouse.com/cloud) or self-hosted)
 - **Massive API key** ([Sign up here](https://massive.com))
 
-## Getting Started
+## Getting started
 
 You can explore the public demo at [https://stockhouse.clickhouse.com](https://stockhouse.clickhouse.com) or deploy it locally by following these steps.
 
-### 1. Set Up ClickHouse Database
+### 1. Set up ClickHouse
 
 Run the schema script to set up all required tables and materialized views:
 
@@ -70,7 +69,7 @@ The schema includes:
 - **Aggregate tables**: Daily aggregations for quotes and trades
 - **Materialized views**: Automatic real-time aggregation of trading data
 
-### 2. Run the Ingester
+### 2. Run the ingester
 
 The ingester is a Go-based service that connects to Massive WebSocket APIs and streams data into ClickHouse.
 
@@ -93,7 +92,7 @@ docker run --rm \
   massive-ingester:latest
 ```
 
-**Environment Variables:**
+**Environment variables:**
 - `CLICKHOUSE_HOST` - ClickHouse host and native port (e.g., `your-instance.clickhouse.cloud:9440` or `localhost:9000`)
 - `CLICKHOUSE_USER` - ClickHouse username (usually `default`)
 - `CLICKHOUSE_PASSWORD` - ClickHouse password
@@ -102,7 +101,7 @@ docker run --rm \
 
 The ingester will start streaming data immediately. You should see log messages indicating successful connections and data ingestion.
 
-### 3. Run the Application
+### 3. Run the application
 
 **Install dependencies:**
 
