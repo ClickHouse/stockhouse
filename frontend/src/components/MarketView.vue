@@ -7,14 +7,32 @@
     <div
      
       :id="`${marketType}-controls`"
-      class="flex  w-full items-center h-[54px] py-4"
-      :class="marketType === 'stock' ? 'justify-between' : 'justify-end'"
+      class="flex w-full items-center py-4 gap-4"
     >
-      <div v-if="marketType === 'stock'" class="text-xs text-neutral-400 italic">
-        Stock data is delayed by 15 minutes
+      <div v-if="marketType === 'stock'" class="flex justify-between items-center gap-4 flex-1 max-w-[600px]">
+        <div class="text-xs text-neutral-400 italic w-[350px]">
+          Stock data is delayed by 15 minutes
+        </div>
+        <TickerAutocomplete
+          :available-tickers="availableTickers"
+          :selected-tickers="selectedTickers"
+          :loading="loadingTickers"
+          @toggle-ticker="emit('toggle-ticker', $event)"
+          @reset="emit('reset-tickers')"
+        />
       </div>
 
-      <div v-show="showSpread" class="flex items-center gap-3">
+      <div v-if="marketType === 'crypto' && showPairSelector" class="flex justify-between items-center gap-4 flex-1 max-w-[600px]">
+        <PairAutocomplete
+          :available-pairs="availablePairs"
+          :selected-pairs="selectedPairs"
+          :loading="loadingPairs"
+          @toggle-pair="emit('toggle-pair', $event)"
+          @reset="emit('reset-pairs')"
+        />
+      </div>
+
+      <div v-show="showSpread" class="flex items-end gap-3 ml-auto">
         <div v-show="showCandlestickInterval" class="inline-flex rounded-lg ring-1 ring-neutral-600 overflow-hidden">
           <button
             v-for="interval in intervals"
@@ -38,7 +56,7 @@
     </div>
 
     <div :id="`${marketType}-container`" class="flex flex-1 overflow-hidden relative min-h-0 gap-2">
-      <div :id="`${marketType}-table-container`" class="flex flex-col flex-1 relative min-h-0">
+      <div :id="`${marketType}-table-container`" class="flex flex-col relative min-h-0 w-[600px]">
         <perspective-viewer :ref="setTableRef" theme="Monokai"></perspective-viewer>
       </div>
       <div :id="`${marketType}-spread-container`" class="flex flex-col flex-1 relative min-h-0">
@@ -60,6 +78,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import TickerAutocomplete from './TickerAutocomplete.vue'
+import PairAutocomplete from './PairAutocomplete.vue'
 
 const props = defineProps({
   marketType: {
@@ -71,10 +91,38 @@ const props = defineProps({
   showSpread: Boolean,
   showCloseButton: Boolean,
   showCandlestickInterval: Boolean,
-  selectedInterval: String
+  selectedInterval: String,
+  showPairSelector: {
+    type: Boolean,
+    default: false
+  },
+  availableTickers: {
+    type: Array,
+    default: () => []
+  },
+  selectedTickers: {
+    type: Array,
+    default: () => []
+  },
+  loadingTickers: {
+    type: Boolean,
+    default: false
+  },
+  availablePairs: {
+    type: Array,
+    default: () => []
+  },
+  selectedPairs: {
+    type: Array,
+    default: () => []
+  },
+  loadingPairs: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const emit = defineEmits(['interval-change', 'close-spread', 'viewer-ready'])
+const emit = defineEmits(['interval-change', 'close-spread', 'viewer-ready', 'toggle-ticker', 'toggle-pair', 'reset-tickers', 'reset-pairs'])
 
 const intervals = [
   { value: '5min', label: '5M' },

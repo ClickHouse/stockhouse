@@ -39,15 +39,7 @@
           class="flex items-center gap-2 text-sm text-neutral-400 hover:text-neutral-200 transition-colors py-2 cursor-pointer"
           aria-label="Toggle control panel"
         >
-          <svg
-            class="w-4 h-4 transition-transform duration-200"
-            :class="{ 'rotate-180': !isPanelOpen }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+          <i class="pi pi-angle-down" :class="{ 'pi-angle-up': !isPanelOpen }"></i>
           <span>{{ isPanelOpen ? 'Hide' : 'Show' }} Controls</span>
         </button>
 
@@ -102,9 +94,15 @@
       :show-close-button="crypto.showCandlestick.value"
       :show-candlestick-interval="crypto.showCandlestick.value"
       :selected-interval="crypto.bucketInterval.value"
+      :show-pair-selector="true"
+      :available-pairs="crypto.availablePairs.value"
+      :selected-pairs="crypto.selectedPairs.value"
+      :loading-pairs="crypto.loadingPairs.value"
       @viewer-ready="handleCryptoViewerReady"
       @interval-change="crypto.changeInterval"
       @close-spread="crypto.closeSpread"
+      @toggle-pair="handleTogglePair"
+      @reset-pairs="handleResetPairs"
     />
 
     <!-- Stock Main View -->
@@ -116,9 +114,14 @@
       :show-close-button="stock.showCandlestick.value"
       :show-candlestick-interval="stock.showCandlestick.value"
       :selected-interval="stock.bucketInterval.value"
+      :available-tickers="stock.availableTickers.value"
+      :selected-tickers="stock.selectedTickers.value"
+      :loading-tickers="stock.loadingTickers.value"
       @viewer-ready="handleStockViewerReady"
       @interval-change="stock.changeInterval"
       @close-spread="stock.closeSpread"
+      @toggle-ticker="handleToggleTicker"
+      @reset-tickers="handleResetTickers"
     />
 
     <!-- Footer -->
@@ -207,13 +210,77 @@ const handleMarketChange = async (detail) => {
 
 const handleCryptoViewerReady = async (viewers) => {
   cryptoViewersReady.value = true
+  // Fetch available pairs when crypto view is ready
+  await crypto.fetchAvailablePairs()
   await crypto.init(viewers)
+}
+
+const handleTogglePair = async (pair) => {
+  crypto.togglePair(pair)
+  // Reinitialize the table with new pair selection
+  if (cryptoViewersReady.value) {
+    const viewers = {
+      tableViewer: document.querySelector('#crypto-table-container perspective-viewer'),
+      spreadViewer: document.querySelector('#crypto-spread-container perspective-viewer')
+    }
+    await crypto.init(viewers)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'cryptos') {
+      crypto.stopRefresh()
+      crypto.startRefresh(currentRefreshMs.value)
+    }
+  }
 }
 
 const handleStockViewerReady = async (viewers) => {
   stockViewersReady.value = true
   stockViewers.value = viewers
+  // Fetch available tickers when stock view is ready
+  await stock.fetchAvailableTickers()
   // Don't init yet - we'll init when user switches to stocks
+}
+
+const handleToggleTicker = async (symbol) => {
+  stock.toggleTicker(symbol)
+  // Reinitialize the table with new ticker selection
+  if (stockViewersReady.value && stockViewers.value) {
+    await stock.init(stockViewers.value)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'stocks') {
+      stock.stopRefresh()
+      stock.startRefresh(currentRefreshMs.value)
+    }
+  }
+}
+
+const handleResetTickers = async () => {
+  stock.resetTickers()
+  // Reinitialize the table with reset ticker selection
+  if (stockViewersReady.value && stockViewers.value) {
+    await stock.init(stockViewers.value)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'stocks') {
+      stock.stopRefresh()
+      stock.startRefresh(currentRefreshMs.value)
+    }
+  }
+}
+
+const handleResetPairs = async () => {
+  crypto.resetPairs()
+  // Reinitialize the table with reset pair selection
+  if (cryptoViewersReady.value) {
+    const viewers = {
+      tableViewer: document.querySelector('#crypto-table-container perspective-viewer'),
+      spreadViewer: document.querySelector('#crypto-spread-container perspective-viewer')
+    }
+    await crypto.init(viewers)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'cryptos') {
+      crypto.stopRefresh()
+      crypto.startRefresh(currentRefreshMs.value)
+    }
+  }
 }
 
 const handleConsentChange = (consent) => {

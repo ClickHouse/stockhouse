@@ -1,5 +1,9 @@
 
-export function liveCrypto() {
+export function liveCrypto(pairs = ['BTC-USD','ETH-USD','XRP-USD','ZEC-USD','ALEO-USD','SOL-USD','DASH-USD','SUI-USD','ICP-USD','NEAR-USD','TAO-USD','DOGE-USD','HBAR-USD','LINK-USD','ZK-USD','LTC-USD','XLM-USD','ADA-USD','ZEN-USD','ALCX-USD','APT-USD','USDT-USD','SEI-USD','SYRUP-USD','ONDO-USD','AERO-USD','DOT-USD','USDC-USD','XTZ-USD','MINA-USD']) {
+
+    const pairArray = pairs.length > 0 ? pairs : ['BTC-USD']; // Fallback to at least one symbol
+    const pairsStr = pairArray.map(s => `'${s}'`).join(',');
+    
     return `WITH toDate(now('UTC')) AS curr_day
     SELECT
         t.pair AS pair,
@@ -15,9 +19,8 @@ export function liveCrypto() {
     LEFT JOIN stockhouse.agg_crypto_quotes_daily AS q
         USING (event_date, pair)
     WHERE event_date = curr_day
-    AND endsWith(pair, 'USD')
+    AND pair in (${pairsStr})
     GROUP BY pair
-    HAVING bid > 5
     ORDER BY pair ASC
   `
 }
@@ -131,30 +134,12 @@ export function cryptoPairSpread(pair, lb, bucket_sec) {
 `;
 }
 
-// export function cryptoPairSpread(pair, lb, ub, bucket_sec) {
-//     return `
-// WITH
-//     toIntervalSecond(${bucket_sec}) AS bucket_int
-// SELECT
-
-//     argMin(p, t) AS open,
-//     argMax(p, t) AS close,
-//     max(p)       AS high,
-//     min(p)       AS low,
-//     toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
-// FROM stockhouse.crypto_trades
-// WHERE pair = '${pair}'
-//   AND t >= ${lb}
-//   AND t <  ${ub}
-// GROUP BY timestamp
-// ORDER BY timestamp
-// `;
-// }
-
-
-export function liveStock() {
+export function liveStock(symbols = ['AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG','META','BRK.B','TSM','AVGO','V','MA','UNH','JNJ','XOM','JPMC','WMT','PG','DIS','KO','PFE','VZ','NFLX','ORCL','INTC','ABNB','CRM','ASML','BABA','COST','CVX']) {
+    const symbolsArray = symbols.length > 0 ? symbols : ['AAPL']; // Fallback to at least one symbol
+    const symbolsStr = symbolsArray.map(s => `'${s}'`).join(',');
+    
     return `WITH
-    ['AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG','META','BRK.B','TSM','AVGO','V','MA','UNH','JNJ','XOM','JPMC','WMT','PG','DIS','KO','PFE','VZ','NFLX','ORCL','INTC','ABNB','CRM','ASML','BABA','COST','CVX'] as symbols,
+    [${symbolsStr}] as symbols,
     toDate(now('America/New_York')) AS curr_day,
     trades_info AS
     (
@@ -306,5 +291,26 @@ export function stockDayPriceHistoricQuery(sym) {
     AND ts  <= max_ts
     GROUP BY bucket_end
     ORDER BY bucket_end ASC
+`;
+}
+
+export function getAvailableTickers() {
+    return `
+    SELECT sym, count() as c
+    FROM stockhouse.trades
+    WHERE toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = toDate(now('America/New_York'))
+    GROUP BY sym 
+    ORDER BY c DESC
+`;
+}
+
+export function getAvailableCryptoPairs() {
+    return `
+    SELECT pair, count() as c
+    FROM stockhouse.crypto_trades
+    WHERE toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = toDate(now('America/New_York'))
+    AND endsWith(pair, 'USD')
+    GROUP BY pair 
+    ORDER BY c DESC
 `;
 }

@@ -165,7 +165,7 @@ func main() {
 	// WS readers
 	go stocksWS(ctx, apiKey, "wss://delayed-business.polygon.io/stocks", []string{"Q.*", "T.*"}, qCh, tCh)
 	go cryptoWS(ctx, apiKey, "wss://socket.polygon.io/crypto", []string{"XT.*", "XQ.*"}, cqCh, ctCh)
-	go fmvWS(ctx, apiKey, "wss://business.polygon.io/stocks", []string{"FMV.*"}, fmvCh)
+	// go fmvWS(ctx, apiKey, "wss://business.polygon.io/stocks", []string{"FMV.*"}, fmvCh)
 
 	// Backpressure monitor + shedding
 	go func() {

@@ -3,12 +3,14 @@
 // In dev: proxied through Vite to /api/query
 const apiUrl = '/api/query';
 
-export async function executeQuery(query) {
-    const response = await fetch(apiUrl, {
+export async function executeQuery(query, format = 'arrow') {
+    const url = format === 'json' ? `${apiUrl}?format=json` : apiUrl;
+    
+    const response = await fetch(url, {
         method: "POST",
         body: query,
         headers: { 
-        'Content-Type': 'text/plain'
+          'Content-Type': 'text/plain'
         }
     });
 
@@ -17,9 +19,12 @@ export async function executeQuery(query) {
       throw new Error(`Query failed: ${error}`);
     }
 
+    if (format === 'json') {
+      const jsonData = await response.json();
+      return { data: jsonData, format: 'json' };
+    }
 
     const rows = await response.arrayBuffer();
-
     return {rows, has_rows: rows.byteLength > 842};
 }
 

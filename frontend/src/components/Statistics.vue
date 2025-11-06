@@ -1,5 +1,5 @@
 <template>
-  <div class="relative border border-[#eef400] rounded-md p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm lg:min-w-[380px]">
+  <div class="relative border border-[#eef400] rounded-md p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm lg:min-w-[380px] h-[180px]">
     <span class="absolute -top-3 left-[50%] translate-x-[-50%] border border-[#eef400] text-neutral-400 font-light rounded-full bg-[#1d1d1d] px-4 text-sm font-medium text-neutral-200">
       Statistics
     </span>

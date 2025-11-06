@@ -11,8 +11,8 @@
       "ask": {
         "number_fg_mode":"disabled",
         "number_bg_mode": "pulse",
-        "pos_bg_color":"#33ff44",
-        "neg_bg_color":"#ff2323",
+        "pos_bg_color":"#CCFFD0",
+        "neg_bg_color":"#FFBABA",
         "number_format": {
           "style": "currency",
           "currency": "USD"
@@ -21,16 +21,16 @@
       "last": {
         "number_fg_mode":"disabled",
         "number_bg_mode": "pulse",
-        "pos_bg_color":"#33ff44",
-        "neg_bg_color":"#ff2323",
+        "pos_bg_color":"#CCFFD0",
+        "neg_bg_color":"#FFBABA",
         "number_format": {
           "style": "currency",
           "currency": "USD"
         }
       },
       "change": {
-        "pos_fg_color":"#33ff44",
-        "neg_fg_color":"#ff2323",
+        "pos_fg_color":"#CCFFD0",
+        "neg_fg_color":"#FFBABA",
         "number_format": {
           "style": "unit",
           "unit": "percent",
@@ -50,8 +50,8 @@
       "bid": {
         "number_fg_mode":"disabled",
         "number_bg_mode": "pulse",
-        "pos_bg_color":"#33ff44",
-        "neg_bg_color":"#ff2323",
+        "pos_bg_color":"#CCFFD0",
+        "neg_bg_color":"#FFBABA",
         "number_format": {
           "style": "currency",
           "currency": "USD",
@@ -95,8 +95,8 @@
       "ask": {
         "number_fg_mode":"disabled",
         "number_bg_mode": "pulse",
-        "pos_bg_color":"#33ff44",
-        "neg_bg_color":"#ff2323",
+        "pos_bg_color":"#CCFFD0",
+        "neg_bg_color":"#FFBABA",
         "number_format": {
           "style": "currency",
           "currency": "USD"
@@ -105,16 +105,16 @@
       "last": {
         "number_fg_mode":"disabled",
         "number_bg_mode": "pulse",
-        "pos_bg_color":"#33ff44",
-        "neg_bg_color":"#ff2323",
+        "pos_bg_color":"#CCFFD0",
+        "neg_bg_color":"#FFBABA",
         "number_format": {
           "style": "currency",
           "currency": "USD"
         }
       },
      "change": {
-        "pos_fg_color":"#33ff44",
-        "neg_fg_color":"#ff2323",
+        "pos_fg_color":"#CCFFD0",
+        "neg_fg_color":"#FFBABA",
         "number_format": {
           "style": "unit",
           "unit": "percent",
@@ -131,8 +131,8 @@
       "bid": {
         "number_fg_mode":"disabled",
         "number_bg_mode": "pulse",
-        "pos_bg_color":"#33ff44",
-        "neg_bg_color":"#ff2323",
+        "pos_bg_color":"#CCFFD0",
+        "neg_bg_color":"#FFBABA",
         "number_format": {
           "style": "currency",
           "currency": "USD",
