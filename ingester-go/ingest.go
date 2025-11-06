@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -111,9 +112,18 @@ func main() {
 	apiKey := mustEnv("MASSIVE_API_KEY")
 	chAddr := mustEnv("CLICKHOUSE_HOST") // e.g. host:9440 (native TLS)
 	chUser := mustEnv("CLICKHOUSE_USER")
-	chPass := mustEnv("CLICKHOUSE_PASSWORD")
+	chPass := os.Getenv("CLICKHOUSE_PASSWORD")
+	chDB := os.Getenv("CLICKHOUSE_DB")
+	secure := os.Getenv("CLICKHOUSE_SECURE") == "true"
 	host, _, _ := strings.Cut(chAddr, ":")
-
+	var tlsCfg *tls.Config
+	if secure {
+		tlsCfg = &tls.Config{
+			ServerName:         host,
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: true, // ok for dev only
+		}
+	}
 	cli := clickhouse.OpenDB(&clickhouse.Options{
 		Addr:     []string{chAddr},
 		Protocol: clickhouse.Native,
@@ -121,10 +131,7 @@ func main() {
 			Username: chUser,
 			Password: chPass,
 		},
-		TLS: &tls.Config{
-			ServerName: host, // SNI + cert validation
-			MinVersion: tls.VersionTLS12,
-		},
+		TLS:         tlsCfg,
 		DialTimeout: 30 * time.Second,
 		Compression: &clickhouse.Compression{Method: clickhouse.CompressionLZ4},
 	})
@@ -149,11 +156,11 @@ func main() {
 	// Insert workers
 	var wg sync.WaitGroup
 	wg.Add(5)
-	go insertQuotes(ctx, &wg, cli, qCh)
-	go insertTrades(ctx, &wg, cli, tCh)
-	go insertCryptoQuotes(ctx, &wg, cli, cqCh)
-	go insertCryptoTrades(ctx, &wg, cli, ctCh)
-	go insertFmv(ctx, &wg, cli, fmvCh)
+	go insertQuotes(ctx, &wg, cli, chDB, qCh)
+	go insertTrades(ctx, &wg, cli, chDB, tCh)
+	go insertCryptoQuotes(ctx, &wg, cli, chDB, cqCh)
+	go insertCryptoTrades(ctx, &wg, cli, chDB, ctCh)
+	go insertFmv(ctx, &wg, cli, chDB, fmvCh)
 
 	// WS readers
 	go stocksWS(ctx, apiKey, "wss://delayed-business.polygon.io/stocks", []string{"Q.*", "T.*"}, qCh, tCh)
@@ -416,7 +423,7 @@ func normalizeC(c any) uint8 {
 	return 0
 }
 
-func insertQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan StockQuote) {
+func insertQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, chDB string, in <-chan StockQuote) {
 	defer wg.Done()
 	tick := time.NewTicker(maxInterval)
 	defer tick.Stop()
@@ -455,7 +462,7 @@ func insertQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO quotes (sym,bx,bp,bs,ax,ap,as,c,i,t,q,z) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, fmt.Sprintf("INSERT INTO %s.quotes (sym,bx,bp,bs,ax,ap,as,c,i,t,q,z) VALUES", chDB))
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("quotes prepare: %v", err)
@@ -515,7 +522,7 @@ func insertQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan
 	}
 }
 
-func insertTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan StockTrade) {
+func insertTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, chDB string, in <-chan StockTrade) {
 	defer wg.Done()
 	tick := time.NewTicker(maxInterval)
 	defer tick.Stop()
@@ -550,7 +557,7 @@ func insertTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO trades (sym,i,x,p,s,c,t,q,z,trfi,trft) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, fmt.Sprintf("INSERT INTO %s.trades (sym,i,x,p,s,c,t,q,z,trfi,trft) VALUES", chDB))
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("trades prepare: %v", err)
@@ -609,7 +616,7 @@ func insertTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan
 	}
 }
 
-func insertCryptoQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan CryptoQuote) {
+func insertCryptoQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, chDB string, in <-chan CryptoQuote) {
 	defer wg.Done()
 	tick := time.NewTicker(maxInterval)
 	defer tick.Stop()
@@ -635,7 +642,7 @@ func insertCryptoQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in 
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO crypto_quotes (pair,bp,bs,ap,as,t,x,r) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, fmt.Sprintf("INSERT INTO %s.crypto_quotes (pair,bp,bs,ap,as,t,x,r) VALUES", chDB))
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("crypto_quotes prepare: %v", err)
@@ -688,7 +695,7 @@ func insertCryptoQuotes(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in 
 	}
 }
 
-func insertCryptoTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan CryptoTrade) {
+func insertCryptoTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, chDB string, in <-chan CryptoTrade) {
 	defer wg.Done()
 	tick := time.NewTicker(maxInterval)
 	defer tick.Stop()
@@ -717,7 +724,7 @@ func insertCryptoTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in 
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO crypto_trades (pair,p,t,s,c,i,x,r) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, fmt.Sprintf("INSERT INTO %s.crypto_trades (pair,p,t,s,c,i,x,r) VALUES", chDB))
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("crypto_trades prepare: %v", err)
@@ -770,7 +777,7 @@ func insertCryptoTrades(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in 
 	}
 }
 
-func insertFmv(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan FMV) {
+func insertFmv(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, chDB string, in <-chan FMV) {
 	defer wg.Done()
 	tick := time.NewTicker(maxInterval)
 	defer tick.Stop()
@@ -794,7 +801,7 @@ func insertFmv(ctx context.Context, wg *sync.WaitGroup, db *sql.DB, in <-chan FM
 			reset()
 			return
 		}
-		stmt, err := tx.PrepareContext(ctxIns, `INSERT INTO stock_fmv (sym,fmv,t) VALUES`)
+		stmt, err := tx.PrepareContext(ctxIns, fmt.Sprintf("INSERT INTO %s.stock_fmv (sym,fmv,t) VALUES", chDB))
 		if err != nil {
 			_ = tx.Rollback()
 			log.Printf("fmv prepare: %v", err)
