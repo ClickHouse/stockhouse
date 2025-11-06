@@ -17,9 +17,6 @@ This setup demonstrates how to handle streaming financial data, store it efficie
 
 This [blog](https://clickhouse.com/blog/build-a-real-time-market-data-app-with-clickhouse-and-polygonio) explains in detail the concepts behind building this application. 
 
-![stockhouse-diagram](https://github.com/user-attachments/assets/27768213-5469-4600-abc0-73ca4ef69308)
-
-
 ## Motivation
 
 Financial data moves fast and traditional systems can’t always keep up.
@@ -47,6 +44,8 @@ StockHouse consists of five main components:
 3. **Database** – ClickHouse tables optimized for time-series ingestion and aggregation
 4. **Backend** – Node.js API server for querying ClickHouse
 5. **Frontend** – Vue.js dashboard with Perspective for real-time visualization
+
+   ![stockhouse-diagram](https://github.com/user-attachments/assets/27768213-5469-4600-abc0-73ca4ef69308)
 
 ## Prerequisites
 
