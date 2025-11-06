@@ -2,45 +2,67 @@
   <div
     :id="`${marketType}-main`"
     v-show="visible"
-    class="md:px-4 lg:px-16 pb-2 flex flex-col flex-1 min-h-0 "
+    class="px-4 lg:px-16 pb-2 flex flex-col lg:flex-row flex-1 min-h-0 gap-2"
   >
-    <div
-     
-      :id="`${marketType}-controls`"
-      class="flex  w-full items-center h-[54px] py-4"
-      :class="marketType === 'stock' ? 'justify-between' : 'justify-end'"
-    >
-      <div v-if="marketType === 'stock'" class="text-xs text-neutral-400 italic">
-        Stock data is delayed by 15 minutes
-      </div>
-
-      <div v-show="showSpread" class="flex items-center gap-3">
-        <div v-show="showCandlestickInterval" class="inline-flex rounded-lg ring-1 ring-neutral-600 overflow-hidden">
-          <button
-            v-for="interval in intervals"
-            :key="interval.value"
-            @click="emit('interval-change', interval.value)"
-            :class="getButtonClass(interval.value)"
-          >
-            {{ interval.label }}
-          </button>
+    <!-- Table Section with Controls -->
+    <div :id="`${marketType}-table-section`" class="flex flex-col h-[400px] lg:h-auto lg:min-h-0 w-full lg:w-[600px] overflow-x-auto">
+      <div class="flex items-center py-4 gap-4 flex-shrink-0">
+        <div v-if="marketType === 'stock'" class="flex flex-col lg:flex-row items-start lg:items-center gap-2 lg:gap-4 w-full">
+          <div class="text-xs text-neutral-400 italic lg:w-[250px] flex-shrink-0">
+            Stock data is delayed by 15 minutes
+          </div>
+          <div class="w-full lg:flex-1">
+            <TickerAutocomplete
+              :available-tickers="availableTickers"
+              :selected-tickers="selectedTickers"
+              :loading="loadingTickers"
+              @toggle-ticker="emit('toggle-ticker', $event)"
+              @reset="emit('reset-tickers')"
+            />
+          </div>
         </div>
 
-
-        <button
-          v-show="showCloseButton"
-          @click="emit('close-spread')"
-          class="bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          Close
-        </button>
+        <div v-if="marketType === 'crypto' && showPairSelector" class="flex items-center gap-4 w-full">
+          <PairAutocomplete
+            :available-pairs="availablePairs"
+            :selected-pairs="selectedPairs"
+            :loading="loadingPairs"
+            @toggle-pair="emit('toggle-pair', $event)"
+            @reset="emit('reset-pairs')"
+          />
+        </div>
+      </div>
+      
+      <div :id="`${marketType}-table-container`" class="flex flex-col relative flex-1 min-h-0">
+        <perspective-viewer :ref="setTableRef" theme="Monokai"></perspective-viewer>
       </div>
     </div>
 
-    <div :id="`${marketType}-container`" class="flex flex-1 overflow-hidden relative min-h-0 gap-2">
-      <div :id="`${marketType}-table-container`" class="flex flex-col flex-1 relative min-h-0">
-        <perspective-viewer :ref="setTableRef" theme="Monokai"></perspective-viewer>
+    <!-- Candlestick Section with Controls -->
+    <div :id="`${marketType}-spread-section`" class="flex flex-col h-[500px] lg:h-auto lg:flex-1 lg:min-h-0 overflow-x-auto">
+      <div class="flex items-center justify-end py-4 gap-3 flex-shrink-0 min-h-[74px]">
+        <template v-if="showSpread">
+          <div v-show="showCandlestickInterval" class="inline-flex rounded-lg ring-1 ring-neutral-600 overflow-hidden">
+            <button
+              v-for="interval in intervals"
+              :key="interval.value"
+              @click="emit('interval-change', interval.value)"
+              :class="getButtonClass(interval.value)"
+            >
+              {{ interval.label }}
+            </button>
+          </div>
+
+          <button
+            v-show="showCloseButton"
+            @click="emit('close-spread')"
+            class="bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          >
+            Close
+          </button>
+        </template>
       </div>
+
       <div :id="`${marketType}-spread-container`" class="flex flex-col flex-1 relative min-h-0">
         <div
           v-show="!showSpread"
@@ -60,6 +82,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import TickerAutocomplete from './TickerAutocomplete.vue'
+import PairAutocomplete from './PairAutocomplete.vue'
 
 const props = defineProps({
   marketType: {
@@ -71,10 +95,38 @@ const props = defineProps({
   showSpread: Boolean,
   showCloseButton: Boolean,
   showCandlestickInterval: Boolean,
-  selectedInterval: String
+  selectedInterval: String,
+  showPairSelector: {
+    type: Boolean,
+    default: false
+  },
+  availableTickers: {
+    type: Array,
+    default: () => []
+  },
+  selectedTickers: {
+    type: Array,
+    default: () => []
+  },
+  loadingTickers: {
+    type: Boolean,
+    default: false
+  },
+  availablePairs: {
+    type: Array,
+    default: () => []
+  },
+  selectedPairs: {
+    type: Array,
+    default: () => []
+  },
+  loadingPairs: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const emit = defineEmits(['interval-change', 'close-spread', 'viewer-ready'])
+const emit = defineEmits(['interval-change', 'close-spread', 'viewer-ready', 'toggle-ticker', 'toggle-pair', 'reset-tickers', 'reset-pairs'])
 
 const intervals = [
   { value: '5min', label: '5M' },

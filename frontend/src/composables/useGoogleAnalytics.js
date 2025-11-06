@@ -29,7 +29,6 @@ export function useGoogleAnalytics(gaId = 'G-KF1LLRTQ5Q') {
     })
 
     isScriptLoaded.value = true
-    console.log('Google Analytics loaded with consent')
   }
 
   const setConsent = (consent) => {
@@ -38,8 +37,6 @@ export function useGoogleAnalytics(gaId = 'G-KF1LLRTQ5Q') {
     if (consent) {
       loadGoogleAnalytics()
     } else {
-      console.log('Google Analytics consent declined')
-      // Optionally: remove GA cookies if consent is declined
       if (window.gtag) {
         window.gtag('consent', 'update', {
           analytics_storage: 'denied'
@@ -48,7 +45,6 @@ export function useGoogleAnalytics(gaId = 'G-KF1LLRTQ5Q') {
     }
   }
 
-  // Watch for consent changes
   watch(hasConsent, (newConsent) => {
     if (newConsent && !isScriptLoaded.value) {
       loadGoogleAnalytics()

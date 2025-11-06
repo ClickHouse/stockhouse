@@ -4,14 +4,14 @@
     <CookieBanner @consent-change="handleConsentChange" @banner-closed="handleBannerClosed" />
     <!-- Header -->
     <header
-      class="bg-neutral-800 shadow-lg border-b border-neutral-700 md:sticky md:top-0 z-20 opacity-[98%] backdrop-filter backdrop-blur-lg bg-opacity-90 h-[68px] flex-shrink-0">
-      <nav class="mx-auto flex items-center justify-between md:px-4 lg:px-16 lg:w-full h-[68px]" aria-label="Global">
+      class="bg-neutral-800 shadow-lg border-b border-neutral-700 lg:sticky lg:top-0 z-20 opacity-[98%] backdrop-filter backdrop-blur-lg bg-opacity-90 h-[68px] flex-shrink-0">
+      <nav class="mx-auto flex items-center justify-center lg:justify-between lg:px-4 lg:px-16 lg:w-full h-[68px]" aria-label="Global">
         <div class="items-center flex gap-8">
           <a href="/">
             <img class="w-38" src="/stockhouse.svg" alt="StockHouse" width="96" height="32" />
           </a>
         </div>
-        <div class="flex items-center">
+        <div class="hidden lg:flex items-center">
           <p class="text-sm text-neutral-0">Powered by</p>
           <div class="flex items-center">
             <a href="https://clickhouse.com" target="_blank" rel="noopener noreferrer">
@@ -31,7 +31,7 @@
     </header>
 
     <!-- Control Panel and Statistics -->
-    <div class="w-full md:px-4 lg:px-16 flex-shrink-0">
+    <div class="w-full px-4 xl:px-16 flex-shrink-0">
       <!-- Toggle Button and Collapsed Summary -->
       <div class="flex items-center justify-between">
         <button
@@ -39,15 +39,7 @@
           class="flex items-center gap-2 text-sm text-neutral-400 hover:text-neutral-200 transition-colors py-2 cursor-pointer"
           aria-label="Toggle control panel"
         >
-          <svg
-            class="w-4 h-4 transition-transform duration-200"
-            :class="{ 'rotate-180': !isPanelOpen }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+          <i class="pi pi-angle-down" :class="{ 'pi-angle-up': !isPanelOpen }"></i>
           <span>{{ isPanelOpen ? 'Hide' : 'Show' }} Controls</span>
         </button>
 
@@ -75,7 +67,7 @@
       >
         <div
           v-show="isPanelOpen"
-          class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 w-full overflow-hidden"
+          class="flex flex-col lg:flex-row justify-center lg:justify-between items-center gap-4 w-full overflow-hidden"
         >
           <ControlPanel
             @refresh-change="handleRefreshChange"
@@ -102,9 +94,15 @@
       :show-close-button="crypto.showCandlestick.value"
       :show-candlestick-interval="crypto.showCandlestick.value"
       :selected-interval="crypto.bucketInterval.value"
+      :show-pair-selector="true"
+      :available-pairs="crypto.availablePairs.value"
+      :selected-pairs="crypto.selectedPairs.value"
+      :loading-pairs="crypto.loadingPairs.value"
       @viewer-ready="handleCryptoViewerReady"
       @interval-change="crypto.changeInterval"
       @close-spread="crypto.closeSpread"
+      @toggle-pair="handleTogglePair"
+      @reset-pairs="handleResetPairs"
     />
 
     <!-- Stock Main View -->
@@ -116,20 +114,25 @@
       :show-close-button="stock.showCandlestick.value"
       :show-candlestick-interval="stock.showCandlestick.value"
       :selected-interval="stock.bucketInterval.value"
+      :available-tickers="stock.availableTickers.value"
+      :selected-tickers="stock.selectedTickers.value"
+      :loading-tickers="stock.loadingTickers.value"
       @viewer-ready="handleStockViewerReady"
       @interval-change="stock.changeInterval"
       @close-spread="stock.closeSpread"
+      @toggle-ticker="handleToggleTicker"
+      @reset-tickers="handleResetTickers"
     />
 
     <!-- Footer -->
-    <footer class="w-full md:px-4 lg:px-16 py-4 mt-auto border-t border-neutral-700 bg-neutral-800">
+    <footer class="w-full lg:px-4 lg:px-16 py-4 mt-auto border-t border-neutral-700 bg-neutral-800">
       <Footer />
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import ControlPanel from './components/ControlPanel.vue'
 import Statistics from './components/Statistics.vue'
 import MarketView from './components/MarketView.vue'
@@ -155,6 +158,7 @@ const stockViewers = ref(null)
 const isBannerClosed = ref(false)
 const isPanelOpen = ref(true)
 const currentRefreshLabel = ref('No refresh')
+const isLargeScreen = ref(window.innerWidth >= 1024)
 
 // Handle events from ControlPanel
 const handleRefreshChange = (detail) => {
@@ -207,13 +211,77 @@ const handleMarketChange = async (detail) => {
 
 const handleCryptoViewerReady = async (viewers) => {
   cryptoViewersReady.value = true
+  // Fetch available pairs when crypto view is ready
+  await crypto.fetchAvailablePairs()
   await crypto.init(viewers)
+}
+
+const handleTogglePair = async (pair) => {
+  crypto.togglePair(pair)
+  // Reinitialize the table with new pair selection
+  if (cryptoViewersReady.value) {
+    const viewers = {
+      tableViewer: document.querySelector('#crypto-table-container perspective-viewer'),
+      spreadViewer: document.querySelector('#crypto-spread-container perspective-viewer')
+    }
+    await crypto.init(viewers)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'cryptos') {
+      crypto.stopRefresh()
+      crypto.startRefresh(currentRefreshMs.value)
+    }
+  }
 }
 
 const handleStockViewerReady = async (viewers) => {
   stockViewersReady.value = true
   stockViewers.value = viewers
+  // Fetch available tickers when stock view is ready
+  await stock.fetchAvailableTickers()
   // Don't init yet - we'll init when user switches to stocks
+}
+
+const handleToggleTicker = async (symbol) => {
+  stock.toggleTicker(symbol)
+  // Reinitialize the table with new ticker selection
+  if (stockViewersReady.value && stockViewers.value) {
+    await stock.init(stockViewers.value)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'stocks') {
+      stock.stopRefresh()
+      stock.startRefresh(currentRefreshMs.value)
+    }
+  }
+}
+
+const handleResetTickers = async () => {
+  stock.resetTickers()
+  // Reinitialize the table with reset ticker selection
+  if (stockViewersReady.value && stockViewers.value) {
+    await stock.init(stockViewers.value)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'stocks') {
+      stock.stopRefresh()
+      stock.startRefresh(currentRefreshMs.value)
+    }
+  }
+}
+
+const handleResetPairs = async () => {
+  crypto.resetPairs()
+  // Reinitialize the table with reset pair selection
+  if (cryptoViewersReady.value) {
+    const viewers = {
+      tableViewer: document.querySelector('#crypto-table-container perspective-viewer'),
+      spreadViewer: document.querySelector('#crypto-spread-container perspective-viewer')
+    }
+    await crypto.init(viewers)
+    // Restart refresh if it was running
+    if (currentRefreshMs.value && currentMarket.value === 'cryptos') {
+      crypto.stopRefresh()
+      crypto.startRefresh(currentRefreshMs.value)
+    }
+  }
 }
 
 const handleConsentChange = (consent) => {
@@ -242,9 +310,30 @@ const onLeave = (el) => {
   el.style.opacity = '0'
 }
 
+// Handle window resize to auto-hide panel on small screens
+const handleResize = () => {
+  const wasLargeScreen = isLargeScreen.value
+  isLargeScreen.value = window.innerWidth >= 1024
+  
+  // Auto-close panel when switching to small screen
+  if (wasLargeScreen && !isLargeScreen.value) {
+    isPanelOpen.value = false
+  }
+}
+
 onMounted(async () => {
   // Start ping monitoring
   startPing()
+  
+  // Set initial panel state based on screen size
+  isPanelOpen.value = isLargeScreen.value
+  
+  // Add resize listener
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 

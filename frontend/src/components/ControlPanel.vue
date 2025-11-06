@@ -1,15 +1,14 @@
 <template>
-  <div class="relative border border-[#eef400] rounded-lg p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm flex-1 lg:flex-initial lg:min-w-[600px]">
+  <div class="relative border border-[#eef400] rounded-lg p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm w-full lg:flex-1 lg:flex-initial lg:min-w-[600px] lg:h-[180px] max-w-[600px]">
     <!-- Title -->
     <span class="absolute -top-3 left-[50%] border border-[#eef400] text-neutral-400 font-light rounded-full translate-x-[-50%] bg-[#1d1d1d] px-4 text-sm font-medium text-neutral-200 ">
       Controls
     </span>
-    <div class="space-y-6 text-neutral-200 flex gap-8 flex-wrap lg:flex-nowrap">
+    <div class="space-y-6 text-neutral-200 flex flex-col lg:flex-row gap-8">
       <!-- Refresh speed -->
       <div>
-        <legend class="text-sm font-medium mb-2">Refresh speed</legend>
+        <legend class="text-sm font-medium">Refresh speed</legend>
 
-        <!-- Slider -->
         <input
           v-model.number="refreshValue"
           type="range"
@@ -30,7 +29,6 @@
           <span>50ms</span>
         </div>
 
-        <!-- Live value -->
         <div id="refreshCurrent" class="mt-4 text-sm">
           Current: <span class="font-medium">{{ refreshLabel }}</span>
         </div>
@@ -87,18 +85,14 @@ import { ref, computed } from 'vue'
 // Emit events to parent
 const emit = defineEmits(['refreshChange', 'marketChange'])
 
-// State
-const refreshValue = ref(0)
+const refreshValue = ref(1)
 const selectedMarket = ref('cryptos')
 
-// v=0 => null (paused). v=1..100 maps linearly 1000ms -> 50ms
 function valueToMs(v) {
   if (v === 0) return null
-  // Linear map from 1000 to 50 over 99 steps
   return Math.round(1000 - (v - 1) * (950 / 99))
 }
 
-// Computed label
 const refreshLabel = computed(() => {
   const ms = valueToMs(refreshValue.value)
   if (ms === null) {
@@ -108,7 +102,6 @@ const refreshLabel = computed(() => {
   }
 })
 
-// Event handlers
 const handleRefreshChange = () => {
   const ms = valueToMs(refreshValue.value)
   emit('refreshChange', {
