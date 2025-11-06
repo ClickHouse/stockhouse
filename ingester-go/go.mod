@@ -1,4 +1,4 @@
-module polygon-ingester
+module massive-ingester
 
 go 1.22
 

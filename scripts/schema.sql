@@ -11,7 +11,7 @@ CREATE TABLE quotes
     `i` Array(UInt8),
     `t` UInt64,
     `q` UInt64,
-    `z` Enum8('NYSE' = 1, 'AMEX' = 2, 'Nasdaq' = 3),
+    `z` UInt8,
     `inserted_at` UInt64 DEFAULT toUnixTimestamp64Milli(now64())
 )
 ORDER BY (sym, t - (t % 60000));
@@ -26,7 +26,7 @@ CREATE TABLE trades
     `c` Array(UInt8),
     `t` UInt64,
     `q` UInt64,
-    `z` Enum8('NYSE' = 1, 'AMEX' = 2, 'Nasdaq' = 3),
+    `z` UInt8,
     `trfi` UInt64,
     `trft` UInt64,
     `inserted_at` UInt64 DEFAULT toUnixTimestamp64Milli(now64())

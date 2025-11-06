@@ -141,7 +141,7 @@ export function useMarketData(config) {
 
       mainTable.value = await worker.table(rows, { index: indexField })
       await tableViewer.value.load(mainTable.value)
-      tableViewer.value.restore({ theme: 'Pro Dark', ...(configs?.[mainConfigKey] || {}) })
+      tableViewer.value.restore({ theme: 'Monokai', ...(configs?.[mainConfigKey] || {}) })
 
       await updateMainTable()
       error.value = null
@@ -167,7 +167,7 @@ export function useMarketData(config) {
       candlestickTable.value = await worker.table(rows, { index: 'timestamp' })
       await spreadViewer.value.load(candlestickTable.value)
       spreadViewer.value.restore({
-        theme: 'Pro Dark',
+        theme: 'Monokai',
         ...(configs?.[spreadConfigKey] || {})
       })
 

@@ -10,10 +10,10 @@ COPY go.mod ./
 COPY . .
 ENV CGO_ENABLED=0
 RUN go mod tidy \
- && go build -trimpath -ldflags="-s -w" -o polygon-ingester
+ && go build -trimpath -ldflags="-s -w" -o massive-ingester
 
 # Run
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /app
-COPY --from=build /app/polygon-ingester .
-ENTRYPOINT ["/app/polygon-ingester"]
+COPY --from=build /app/massive-ingester .
+ENTRYPOINT ["/app/massive-ingester"]

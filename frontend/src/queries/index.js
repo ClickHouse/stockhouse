@@ -11,8 +11,8 @@ export function liveCrypto() {
         sumMerge(t.volume_state)                AS volume,
         toUnixTimestamp64Milli(now64()) -
         greatest(maxMerge(t.latest_t_state), maxMerge(q.latest_t_state)) AS last_update
-    FROM polygon.agg_crypto_trades_daily AS t
-    LEFT JOIN polygon.agg_crypto_quotes_daily AS q
+    FROM stockhouse.agg_crypto_trades_daily AS t
+    LEFT JOIN stockhouse.agg_crypto_quotes_daily AS q
         USING (event_date, pair)
     WHERE event_date = curr_day
     AND endsWith(pair, 'USD')
@@ -34,7 +34,7 @@ export function cryptoLivePriceHistoricQuery(pair) {
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.crypto_trades
+    FROM stockhouse.crypto_trades
     WHERE
     pair = '${pair}'
     AND ts >= now64(3) - INTERVAL 10 MINUTE
@@ -58,7 +58,7 @@ export function cryptoMinutePriceHistoricQuery(pair) {
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.crypto_trades
+    FROM stockhouse.crypto_trades
     WHERE
     pair = '${pair}'
     AND ts >= now64(3) - INTERVAL 30 MINUTE
@@ -81,7 +81,7 @@ export function cryptoHourPriceHistoricQuery(pair) {
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.crypto_trades
+    FROM stockhouse.crypto_trades
     WHERE
     pair = '${pair}'
     AND ts >= now64(3) - INTERVAL 1 HOUR
@@ -102,7 +102,7 @@ export function cryptoDayPriceHistoricQuery(pair) {
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.crypto_trades
+    FROM stockhouse.crypto_trades
     WHERE
     pair = '${pair}'
     AND ts >= now64(3) - INTERVAL 1 day
@@ -122,7 +122,7 @@ export function cryptoPairSpread(pair, lb, bucket_sec) {
         max(p)       AS high,
         min(p)       AS low,
         toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
-    FROM polygon.crypto_trades
+    FROM stockhouse.crypto_trades
     WHERE pair = '${pair}'
     AND t >= ${lb}
     AND t <  ${ub}
@@ -142,7 +142,7 @@ export function cryptoPairSpread(pair, lb, bucket_sec) {
 //     max(p)       AS high,
 //     min(p)       AS low,
 //     toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
-// FROM polygon.crypto_trades
+// FROM stockhouse.crypto_trades
 // WHERE pair = '${pair}'
 //   AND t >= ${lb}
 //   AND t <  ${ub}
@@ -165,7 +165,7 @@ export function liveStock() {
             sum(s) AS total_volume,
             max(t) AS latest_t,
             toUnixTimestamp64Milli(now64()) - latest_t AS last_update
-        FROM polygon.trades
+        FROM stockhouse.trades
         WHERE (toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = curr_day) AND (sym IN (symbols))
         GROUP BY sym
         ORDER BY sym ASC
@@ -177,7 +177,7 @@ export function liveStock() {
             argMax(bp, t) AS bid,
             argMax(ap, t) AS ask,
             max(t) AS latest_t
-        FROM polygon.quotes
+        FROM stockhouse.quotes
         WHERE (toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = curr_day) AND (sym IN (symbols))
         GROUP BY sym
         ORDER BY sym ASC
@@ -194,27 +194,6 @@ FROM trades_info AS t
 LEFT JOIN quotes_info AS q ON t.sym = q.sym`
 }
 
-// export function liveStock() {
-//     return `WITH toDate(now('UTC')) AS curr_day
-//     SELECT
-//         t.sym AS sym,
-//         argMaxMerge(t.last_price_state) AS last,
-//         argMinMerge(t.open_price_state) AS open,
-//         argMaxMerge(q.bid_state)        AS bid,
-//         argMaxMerge(q.ask_state)        AS ask,
-//         round(((last - open) / open) * 100, 2) AS change,
-//         sumMerge(t.volume_state)                AS volume,
-//         toUnixTimestamp64Milli(now64()) -
-//         greatest(maxMerge(t.latest_t_state), maxMerge(q.latest_t_state)) AS last_update
-//     FROM polygon.agg_stock_trades_daily AS t
-//     LEFT JOIN polygon.agg_stock_quotes_daily AS q
-//         USING (event_date, sym)
-//     WHERE event_date = curr_day AND sym in ('AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG','META','BRK.B','TSM','AVGO','V','MA','UNH','JNJ','XOM','JPMC','WMT','PG','DIS','KO','PFE','VZ','NFLX','ORCL','INTC','ABNB','CRM','ASML','BABA','COST','CVX')
-//     GROUP BY sym
-//     ORDER BY sym ASC
-//   `
-// }
-
 export function stockCandlestick(sym, lb, ub, bucket_sec) {
     return `
 WITH
@@ -226,7 +205,7 @@ SELECT
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(toStartOfInterval(toDateTime64(t / 1000.0, 3), bucket_int), 3) AS timestamp
-FROM polygon.trades
+FROM stockhouse.trades
 WHERE sym = '${sym}'
   AND t >= ${lb}
   AND t <  ${ub}
@@ -242,14 +221,14 @@ export function stockLivePriceHistoricQuery(sym) {
     WITH
     toDateTime64(t / 1000., 3)                                 AS ts,
     toStartOfInterval(ts, INTERVAL 15 SECOND)                  AS bucket_end, 
-    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    toDateTime64( (SELECT max(t) FROM stockhouse.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
     SELECT
     argMin(p, ts) AS open,
     argMax(p, ts) AS close,
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.trades
+    FROM stockhouse.trades
     WHERE
     sym = '${sym}'
     AND ts >= max_ts - INTERVAL 10 MINUTE
@@ -267,14 +246,14 @@ export function stockMinutePriceHistoricQuery(sym) {
         WITH
     toDateTime64(t / 1000., 3)                                 AS ts,
     toStartOfInterval(ts, INTERVAL 1 MINUTE)                  AS bucket_end,
-    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    toDateTime64( (SELECT max(t) FROM stockhouse.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
     SELECT
     argMin(p, ts) AS open,
     argMax(p, ts) AS close,
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.trades
+    FROM stockhouse.trades
     WHERE
     sym = '${sym}'
     AND ts >= max_ts - INTERVAL 30 MINUTE
@@ -291,14 +270,14 @@ export function stockHourPriceHistoricQuery(sym) {
         WITH
     toDateTime64(t / 1000., 3)                                 AS ts,
     toStartOfInterval(ts, INTERVAL 2 MINUTE)                  AS bucket_end,
-    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    toDateTime64( (SELECT max(t) FROM stockhouse.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
     SELECT
     argMin(p, ts) AS open,
     argMax(p, ts) AS close,
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.trades
+    FROM stockhouse.trades
     WHERE
     sym = '${sym}'
     AND ts >= max_ts - INTERVAL 1 HOUR
@@ -313,14 +292,14 @@ export function stockDayPriceHistoricQuery(sym) {
         WITH
     toDateTime64(t / 1000., 3)                                 AS ts,
     toStartOfInterval(ts, INTERVAL 10 MINUTE)                  AS bucket_end,
-    toDateTime64( (SELECT max(t) FROM polygon.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
+    toDateTime64( (SELECT max(t) FROM stockhouse.quotes WHERE sym = '${sym}') / 1000., 3 ) AS max_ts
     SELECT
     argMin(p, ts) AS open,
     argMax(p, ts) AS close,
     max(p)       AS high,
     min(p)       AS low,
     toDateTime64(bucket_end, 3) AS timestamp
-    FROM polygon.trades
+    FROM stockhouse.trades
     WHERE
     sym = '${sym}'
     AND ts >= max_ts - INTERVAL 1 day
