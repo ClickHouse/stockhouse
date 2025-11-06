@@ -14,6 +14,8 @@ This setup demonstrates how to handle streaming financial data, store it efficie
 
 This [blog](https://clickhouse.com/blog/build-a-real-time-market-data-app-with-clickhouse-and-polygonio) explains in detail the concepts behind building this application. 
 
+
+
 ## Motivation
 
 Financial data moves fast and traditional systems can’t always keep up.
