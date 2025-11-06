@@ -1,10 +1,10 @@
 <template>
-  <div class="relative border border-[#eef400] rounded-lg p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm flex-1 lg:flex-initial lg:min-w-[600px] h-[180px]">
+  <div class="relative border border-[#eef400] rounded-lg p-6 mt-6 mb-6 bg-neutral-800/50 backdrop-blur-sm w-full lg:flex-1 lg:flex-initial lg:min-w-[600px] lg:h-[180px] max-w-[600px]">
     <!-- Title -->
     <span class="absolute -top-3 left-[50%] border border-[#eef400] text-neutral-400 font-light rounded-full translate-x-[-50%] bg-[#1d1d1d] px-4 text-sm font-medium text-neutral-200 ">
       Controls
     </span>
-    <div class="space-y-6 text-neutral-200 flex gap-8 flex-wrap lg:flex-nowrap">
+    <div class="space-y-6 text-neutral-200 flex flex-col lg:flex-row gap-8">
       <!-- Refresh speed -->
       <div>
         <legend class="text-sm font-medium">Refresh speed</legend>

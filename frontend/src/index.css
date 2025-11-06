@@ -34,7 +34,6 @@ body {
 
 perspective-viewer {
   flex: 1 1 auto;
-  --d3fc-series-1: #33FF44 !important;
 }
 
 
@@ -123,4 +122,27 @@ perspective-viewer perspective-viewer-d3fc-candlestick button#one-year {
   display: none !important;
 }
 
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
 
+::-webkit-scrollbar-track {
+  background: #1d1d1d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #404040 #1d1d1d;
+}

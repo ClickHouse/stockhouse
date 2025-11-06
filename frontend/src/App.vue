@@ -4,14 +4,14 @@
     <CookieBanner @consent-change="handleConsentChange" @banner-closed="handleBannerClosed" />
     <!-- Header -->
     <header
-      class="bg-neutral-800 shadow-lg border-b border-neutral-700 md:sticky md:top-0 z-20 opacity-[98%] backdrop-filter backdrop-blur-lg bg-opacity-90 h-[68px] flex-shrink-0">
-      <nav class="mx-auto flex items-center justify-between md:px-4 lg:px-16 lg:w-full h-[68px]" aria-label="Global">
+      class="bg-neutral-800 shadow-lg border-b border-neutral-700 lg:sticky lg:top-0 z-20 opacity-[98%] backdrop-filter backdrop-blur-lg bg-opacity-90 h-[68px] flex-shrink-0">
+      <nav class="mx-auto flex items-center justify-center lg:justify-between lg:px-4 lg:px-16 lg:w-full h-[68px]" aria-label="Global">
         <div class="items-center flex gap-8">
           <a href="/">
             <img class="w-38" src="/stockhouse.svg" alt="StockHouse" width="96" height="32" />
           </a>
         </div>
-        <div class="flex items-center">
+        <div class="hidden lg:flex items-center">
           <p class="text-sm text-neutral-0">Powered by</p>
           <div class="flex items-center">
             <a href="https://clickhouse.com" target="_blank" rel="noopener noreferrer">
@@ -31,7 +31,7 @@
     </header>
 
     <!-- Control Panel and Statistics -->
-    <div class="w-full md:px-4 lg:px-16 flex-shrink-0">
+    <div class="w-full px-4 xl:px-16 flex-shrink-0">
       <!-- Toggle Button and Collapsed Summary -->
       <div class="flex items-center justify-between">
         <button
@@ -67,7 +67,7 @@
       >
         <div
           v-show="isPanelOpen"
-          class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 w-full overflow-hidden"
+          class="flex flex-col lg:flex-row justify-center lg:justify-between items-center gap-4 w-full overflow-hidden"
         >
           <ControlPanel
             @refresh-change="handleRefreshChange"
@@ -125,14 +125,14 @@
     />
 
     <!-- Footer -->
-    <footer class="w-full md:px-4 lg:px-16 py-4 mt-auto border-t border-neutral-700 bg-neutral-800">
+    <footer class="w-full lg:px-4 lg:px-16 py-4 mt-auto border-t border-neutral-700 bg-neutral-800">
       <Footer />
     </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import ControlPanel from './components/ControlPanel.vue'
 import Statistics from './components/Statistics.vue'
 import MarketView from './components/MarketView.vue'
@@ -158,6 +158,7 @@ const stockViewers = ref(null)
 const isBannerClosed = ref(false)
 const isPanelOpen = ref(true)
 const currentRefreshLabel = ref('No refresh')
+const isLargeScreen = ref(window.innerWidth >= 1024)
 
 // Handle events from ControlPanel
 const handleRefreshChange = (detail) => {
@@ -309,9 +310,30 @@ const onLeave = (el) => {
   el.style.opacity = '0'
 }
 
+// Handle window resize to auto-hide panel on small screens
+const handleResize = () => {
+  const wasLargeScreen = isLargeScreen.value
+  isLargeScreen.value = window.innerWidth >= 1024
+  
+  // Auto-close panel when switching to small screen
+  if (wasLargeScreen && !isLargeScreen.value) {
+    isPanelOpen.value = false
+  }
+}
+
 onMounted(async () => {
   // Start ping monitoring
   startPing()
+  
+  // Set initial panel state based on screen size
+  isPanelOpen.value = isLargeScreen.value
+  
+  // Add resize listener
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
