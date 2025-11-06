@@ -6,6 +6,9 @@ It’s a complete demo of how to build a high-performance streaming analytics ap
 
 Available at https://stockhouse.clickhouse.com
 
+<img width="3006" height="1550" alt="CleanShot 2025-11-06 at 17 52 37@2x" src="https://github.com/user-attachments/assets/3e9dfde6-edb7-4c3f-8f77-fbe6bea895f7" />
+
+
 ## Overview
 
 StockHouse ingests real-time market data — both stock and crypto — directly from [Massive WebSocket APIs](https://massive.com/docs/websocket/quickstart), storing it in ClickHouse for fast querying and serving through a live dashboard built with Perspective.
@@ -14,6 +17,7 @@ This setup demonstrates how to handle streaming financial data, store it efficie
 
 This [blog](https://clickhouse.com/blog/build-a-real-time-market-data-app-with-clickhouse-and-polygonio) explains in detail the concepts behind building this application. 
 
+![stockhouse-diagram](https://github.com/user-attachments/assets/27768213-5469-4600-abc0-73ca4ef69308)
 
 
 ## Motivation
