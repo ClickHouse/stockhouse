@@ -61,7 +61,7 @@
     },
     
     "settings": false,
-    "theme": "Pro Dark",
+    "theme": "Monokai",
     "title": "Trades",
     "group_by": [],
     "split_by": [],
@@ -145,7 +145,7 @@
     },
     
     "settings": false,
-    "theme": "Pro Dark",
+    "theme": "Monokai",
     "title": "Trades",
     "group_by": [],
     "split_by": [],
@@ -174,7 +174,7 @@
     },
     "columns_config": {},
     "settings": false,
-    "theme": "Pro Dark",
+    "theme": "Monokai",
     "group_by": [
       "bucket_mins"
     ],
@@ -208,7 +208,7 @@
     },
     "columns_config": {},
     "settings": false,
-    "theme": "Pro Dark",
+    "theme": "Monokai",
     "group_by": [
       "bucket_mins"
     ],

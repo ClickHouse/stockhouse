@@ -37,9 +37,9 @@
       </div>
     </div>
 
-    <div :id="`${marketType}-container`" class="flex flex-1 overflow-hidden relative min-h-0">
+    <div :id="`${marketType}-container`" class="flex flex-1 overflow-hidden relative min-h-0 gap-2">
       <div :id="`${marketType}-table-container`" class="flex flex-col flex-1 relative min-h-0">
-        <perspective-viewer :ref="setTableRef" theme="Pro Dark"></perspective-viewer>
+        <perspective-viewer :ref="setTableRef" theme="Monokai"></perspective-viewer>
       </div>
       <div :id="`${marketType}-spread-container`" class="flex flex-col flex-1 relative min-h-0">
         <div
@@ -51,7 +51,7 @@
         <perspective-viewer
           :ref="setSpreadRef"
           v-show="showSpread"
-          theme="Pro Dark"
+          theme="Monokai"
         ></perspective-viewer>
       </div>
     </div>
