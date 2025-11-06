@@ -20,7 +20,7 @@ export function useCrypto() {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        return Array.isArray(parsed) ? parsed : null
+        return Array.isArray(parsed) ? parsed : defaultPairs
       }
     } catch (err) {
       console.warn('Failed to load selected crypto pairs from localStorage:', err)
