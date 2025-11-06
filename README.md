@@ -61,6 +61,7 @@ You can explore the public demo at [https://stockhouse.clickhouse.com](https://s
 Run the schema script to set up all required tables and materialized views:
 
 ```bash
+clickhouse-client --query "CREATE DATABASE stockhouse"
 clickhouse-client --database stockhouse < scripts/schema.sql
 ```
 
