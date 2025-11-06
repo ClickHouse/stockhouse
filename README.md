@@ -94,7 +94,7 @@ docker run --rm \
 ```
 
 **Environment variables:**
-- `CLICKHOUSE_HOST` - ClickHouse host and native port (e.g., `your-instance.clickhouse.cloud:9440` or `localhost:9000`)
+- `CLICKHOUSE_HOST` - ClickHouse host and native port (e.g., `your-instance.clickhouse.cloud:9440` or `host.docker.internal:9000` if running the server locally)
 - `CLICKHOUSE_USER` - ClickHouse username (usually `default`)
 - `CLICKHOUSE_PASSWORD` - ClickHouse password
 - `CLICKHOUSE_DB` - Database name (`stockhouse`)
