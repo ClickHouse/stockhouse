@@ -20,12 +20,12 @@ export function useCrypto() {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        return Array.isArray(parsed) ? parsed : defaultPairs
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultPairs
       }
     } catch (err) {
       console.warn('Failed to load selected crypto pairs from localStorage:', err)
     }
-    return null
+    return [...defaultPairs]
   }
   
   const selectedPairs = ref(loadSelectedPairs())
@@ -35,11 +35,7 @@ export function useCrypto() {
   // Save to localStorage whenever selectedPairs changes
   watch(selectedPairs, (newPairs) => {
     try {
-      if (newPairs && newPairs.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newPairs))
-      } else {
-        localStorage.removeItem(STORAGE_KEY)
-      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newPairs))
     } catch (err) {
       console.warn('Failed to save selected crypto pairs to localStorage:', err)
     }
@@ -81,16 +77,11 @@ export function useCrypto() {
   }
   
   function togglePair(pair) {
-    if (!selectedPairs.value) {
-      selectedPairs.value = [pair]
+    const index = selectedPairs.value.indexOf(pair)
+    if (index > -1) {
+      selectedPairs.value = selectedPairs.value.filter(p => p !== pair)
     } else {
-      const index = selectedPairs.value.indexOf(pair)
-      if (index > -1) {
-        const newPairs = selectedPairs.value.filter(p => p !== pair)
-        selectedPairs.value = newPairs.length > 0 ? newPairs : null
-      } else {
-        selectedPairs.value = [...selectedPairs.value, pair]
-      }
+      selectedPairs.value = [...selectedPairs.value, pair]
     }
   }
   
