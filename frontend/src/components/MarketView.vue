@@ -8,9 +8,7 @@
     <div :id="`${marketType}-table-section`" class="flex flex-col h-[400px] lg:h-auto lg:min-h-0 w-full lg:w-[600px] overflow-x-auto">
       <div class="flex items-center py-4 gap-4 flex-shrink-0">
         <div v-if="marketType === 'stock'" class="flex flex-col lg:flex-row items-start lg:items-center gap-2 lg:gap-4 w-full">
-          <div class="text-xs text-neutral-400 italic lg:w-[250px] flex-shrink-0">
-            Stock data is delayed by 15 minutes
-          </div>
+          
           <div class="w-full lg:flex-1">
             <TickerAutocomplete
               :available-tickers="availableTickers"
@@ -35,6 +33,9 @@
       
       <div :id="`${marketType}-table-container`" class="flex flex-col relative flex-1 min-h-0">
         <perspective-viewer :ref="setTableRef" theme="Monokai"></perspective-viewer>
+        <div class="text-xs text-neutral-400 italic pt-2">
+            Due to legal (not technical) requirements, stock data is delayed by 15 minutes. Crypto data is real-time.
+          </div>
       </div>
     </div>
 
