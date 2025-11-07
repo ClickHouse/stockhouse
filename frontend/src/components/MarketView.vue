@@ -34,7 +34,7 @@
       <div :id="`${marketType}-table-container`" class="flex flex-col relative flex-1 min-h-0">
         <perspective-viewer :ref="setTableRef" theme="Monokai"></perspective-viewer>
         <div class="text-xs text-neutral-400 italic pt-2">
-            Due to legal (not technical) requirement, stock data is delayed by 15 minutes. Crypto data is real-time
+            Due to legal (not technical) requirements, stock data is delayed by 15 minutes. Crypto data is real-time.
           </div>
       </div>
     </div>
