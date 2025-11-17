@@ -15,7 +15,7 @@ StockHouse ingests real-time market data — both stock and crypto — directly 
 
 This setup demonstrates how to handle streaming financial data, store it efficiently, and visualize it with millisecond updates.
 
-This [blog](https://clickhouse.com/blog/build-a-real-time-market-data-app-with-clickhouse-and-polygonio) explains in detail the concepts behind building this application. 
+This [blog](https://clickhouse.com/blog/building-stockhouse) explains in detail the concepts behind building this application. 
 
 ## Motivation
 
