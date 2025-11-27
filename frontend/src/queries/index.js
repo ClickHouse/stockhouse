@@ -140,18 +140,18 @@ export function liveStock(symbols = ['AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG',
     
     return `WITH
     [${symbolsStr}] as symbols,
-    toDate(now('America/New_York')) AS curr_day,
+    toDate(now()) AS curr_day,
     trades_info AS
     (
         SELECT
             sym,
             argMax(p, t) AS last_price,
-            round(((last_price - argMinIf(p, t, fromUnixTimestamp64Milli(t, 'America/New_York') >= curr_day)) / argMinIf(p, t, fromUnixTimestamp64Milli(t, 'America/New_York') >= curr_day)) * 100, 2) AS change_pct,
+            round(((last_price - argMinIf(p, t, fromUnixTimestamp64Milli(t) >= curr_day)) / argMinIf(p, t, fromUnixTimestamp64Milli(t) >= curr_day)) * 100, 2) AS change_pct,
             sum(s) AS total_volume,
             max(t) AS latest_t,
             toUnixTimestamp64Milli(now64()) - latest_t AS last_update
         FROM stockhouse.trades
-        WHERE (toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = curr_day) AND (sym IN (symbols))
+        WHERE (toDate(fromUnixTimestamp64Milli(t)) = curr_day) AND (sym IN (symbols))
         GROUP BY sym
         ORDER BY sym ASC
     ),
@@ -163,7 +163,7 @@ export function liveStock(symbols = ['AAPL','MSFT','NVDA','AMZN','GOOGL','GOOG',
             argMax(ap, t) AS ask,
             max(t) AS latest_t
         FROM stockhouse.quotes
-        WHERE (toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = curr_day) AND (sym IN (symbols))
+        WHERE (toDate(fromUnixTimestamp64Milli(t)) = curr_day) AND (sym IN (symbols))
         GROUP BY sym
         ORDER BY sym ASC
     )
@@ -298,7 +298,7 @@ export function getAvailableTickers() {
     return `
     SELECT sym, count() as c
     FROM stockhouse.trades
-    WHERE toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = toDate(now('America/New_York'))
+    WHERE toDate(fromUnixTimestamp64Milli(t)) = toDate(now())
     GROUP BY sym 
     ORDER BY c DESC
 `;
@@ -308,7 +308,7 @@ export function getAvailableCryptoPairs() {
     return `
     SELECT pair, count() as c
     FROM stockhouse.crypto_trades
-    WHERE toDate(fromUnixTimestamp64Milli(t, 'America/New_York')) = toDate(now('America/New_York'))
+    WHERE toDate(fromUnixTimestamp64Milli(t)) = toDate(now())
     AND endsWith(pair, 'USD')
     GROUP BY pair 
     ORDER BY c DESC
