@@ -141,13 +141,13 @@ import Footer from './components/Footer.vue'
 import { useClickhouse } from './composables/useClickhouse.js'
 import { useCrypto } from './composables/useCrypto.js'
 import { useStock } from './composables/useStock.js'
-import { useGoogleAnalytics } from './composables/useGoogleAnalytics.js'
+import { useGTM } from './composables/useGTM.js'
 
 // Composables
 const { pingTime, startPing } = useClickhouse()
 const crypto = useCrypto()
 const stock = useStock()
-const { setConsent } = useGoogleAnalytics('G-KF1LLRTQ5Q')
+const { setConsent } = useGTM('GTM-T55CC768')
 
 // State
 const currentMarket = ref('cryptos')
