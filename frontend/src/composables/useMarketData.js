@@ -45,6 +45,10 @@ export function useMarketData(config) {
   const tableViewer = ref(null)
   const spreadViewer = ref(null)
 
+  // Current Queries
+  const currentLiveQuery = ref('')
+  const currentSpreadQuery = ref('')
+
   // Cached resources
   let cachedConfig = null
   let cachedWorker = null
@@ -83,6 +87,7 @@ export function useMarketData(config) {
       const upperBound = Date.now()
       const start = Date.now()
       const query = liveQuery()
+      currentLiveQuery.value = query
       const { rows, has_rows } = await executeQuery(query)
 
       if (has_rows && mainTable.value) {
@@ -120,6 +125,7 @@ export function useMarketData(config) {
       const configs = await loadConfig()
       const worker = await getWorker()
       const query = liveQuery()
+      currentLiveQuery.value = query
       const { rows } = await executeQuery(query)
 
       if (!tableViewer.value) {
@@ -157,6 +163,7 @@ export function useMarketData(config) {
     try {
       const configs = await loadConfig()
       const query = intervalQueries['5min'](identifier)
+      currentSpreadQuery.value = query
       const { rows } = await executeQuery(query)
 
       if (!spreadViewer.value) {
@@ -194,6 +201,7 @@ export function useMarketData(config) {
     try {
       const query = getQuery(bucketInterval.value)
       if (!query) return
+      currentSpreadQuery.value = query
 
       const { rows, has_rows } = await executeQuery(query)
 
@@ -267,6 +275,8 @@ export function useMarketData(config) {
     lastUpdated,
     avgResponseTime,
     totalDownload,
-    error
+    error,
+    currentLiveQuery,
+    currentSpreadQuery
   }
 }
