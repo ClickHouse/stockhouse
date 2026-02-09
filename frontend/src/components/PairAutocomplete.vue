@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full justify-end items-center gap-2">
+  <div class="flex w-full justify-start items-center gap-2 px-1">
     <div class="relative w-[250px]">
       <input
         ref="inputRef"
