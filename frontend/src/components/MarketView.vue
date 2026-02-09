@@ -29,6 +29,16 @@
             @reset="emit('reset-pairs')"
           />
         </div>
+        <!-- See Query Button -->
+        <button
+          v-if="tableQuery"
+          @click="openQuery(tableQuery)"
+          class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors rounded-lg hover:bg-neutral-800 ml-auto flex-shrink-0 cursor-pointer"
+          title="View query"
+        >
+          <i class="pi pi-external-link"></i>
+          <!-- <span class="hidden sm:inline">Query</span> -->
+        </button>
       </div>
       
       <div :id="`${marketType}-table-container`" class="flex flex-col relative flex-1 min-h-0">
@@ -57,9 +67,17 @@
           <button
             v-show="showCloseButton"
             @click="emit('close-spread')"
-            class="bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+            class="bg-neutral-700 hover:bg-neutral-600 active:bg-neutral-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm cursor-pointer"
           >
             Close
+          </button>
+          <button
+            v-if="spreadQuery"
+            @click="openQuery(spreadQuery)"
+            class="flex items-center justify-center p-2 text-neutral-400 hover:text-white transition-colors rounded-lg hover:bg-neutral-800 cursor-pointer"
+            title="View query"
+          >
+            <i class="pi pi-external-link"></i>
           </button>
         </template>
       </div>
@@ -124,6 +142,14 @@ const props = defineProps({
   loadingPairs: {
     type: Boolean,
     default: false
+  },
+  tableQuery: {
+    type: String,
+    default: ''
+  },
+  spreadQuery: {
+    type: String,
+    default: ''
   }
 })
 
@@ -153,6 +179,12 @@ const getButtonClass = (interval) => {
   const inactiveClass = 'bg-neutral-800 text-white hover:bg-neutral-700'
 
   return `${baseClass} ${props.selectedInterval === interval ? activeClass : inactiveClass}`
+}
+
+const openQuery = (query) => {
+  if (!query) return
+  const encoded = encodeURIComponent(btoa(query))
+  window.open(`https://sql.clickhouse.com/?query=${encoded}`, '_blank')
 }
 
 onMounted(() => {
