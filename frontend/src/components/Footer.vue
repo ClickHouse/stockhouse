@@ -41,12 +41,6 @@
       >
         Cookie Policy
       </a>
-      <button
-        id="cookie-settings-button"
-        class="cmp-revoke-consent text-xs md:text-sm text-neutral-500 whitespace-nowrap bg-transparent hover:text-neutral-0"
-      >
-        Cookie settings
-      </button>
     </div>
   </div>
 </template>

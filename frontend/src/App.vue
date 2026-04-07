@@ -1,7 +1,5 @@
 <template>
   <div class="flex flex-col h-full">
-    <!-- Cookie Banner -->
-    <CookieBanner @consent-change="handleConsentChange" @banner-closed="handleBannerClosed" />
     <!-- Header -->
     <header
       class="bg-neutral-800 shadow-lg border-b border-neutral-700 lg:sticky lg:top-0 z-20 opacity-[98%] backdrop-filter backdrop-blur-lg bg-opacity-90 h-[68px] flex-shrink-0">
@@ -87,7 +85,7 @@
 
     <!-- Crypto Main View -->
     <MarketView
-      v-if="isBannerClosed"
+      v-if="true"
       market-type="crypto"
       :visible="currentMarket === 'cryptos'"
       :show-spread="crypto.showCandlestick.value"
@@ -109,7 +107,7 @@
 
     <!-- Stock Main View -->
     <MarketView
-      v-if="isBannerClosed"
+      v-if="true"
       market-type="stock"
       :visible="currentMarket === 'stocks'"
       :show-spread="stock.showCandlestick.value"
@@ -140,18 +138,15 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import ControlPanel from './components/ControlPanel.vue'
 import Statistics from './components/Statistics.vue'
 import MarketView from './components/MarketView.vue'
-import CookieBanner from './components/CookieBanner.vue'
 import Footer from './components/Footer.vue'
 import { useClickhouse } from './composables/useClickhouse.js'
 import { useCrypto } from './composables/useCrypto.js'
 import { useStock } from './composables/useStock.js'
-import { useGTM } from './composables/useGTM.js'
 
 // Composables
 const { pingTime, startPing } = useClickhouse()
 const crypto = useCrypto()
 const stock = useStock()
-const { setConsent } = useGTM('GTM-T55CC768')
 
 // State
 const currentMarket = ref('cryptos')
@@ -159,7 +154,6 @@ const currentRefreshMs = ref(null)
 const cryptoViewersReady = ref(false)
 const stockViewersReady = ref(false)
 const stockViewers = ref(null)
-const isBannerClosed = ref(false)
 const isPanelOpen = ref(true)
 const currentRefreshLabel = ref('No refresh')
 const isLargeScreen = ref(window.innerWidth >= 1024)
@@ -286,14 +280,6 @@ const handleResetPairs = async () => {
       crypto.startRefresh(currentRefreshMs.value)
     }
   }
-}
-
-const handleConsentChange = (consent) => {
-  setConsent(consent)
-}
-
-const handleBannerClosed = () => {
-  isBannerClosed.value = true
 }
 
 // Transition handlers for smooth collapse/expand
